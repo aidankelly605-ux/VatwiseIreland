@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VATwise Ireland</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;--card:#fff;--border:#e5e3dd;--border2:#c8c6c0;
+  --text:#18181a;--text2:#65635c;--text3:#a8a6a0;
+  --accent:#1a6b3c;--accent-light:#e8f5ee;--accent-mid:#b8deca;
+  --danger:#c0392b;--danger-light:#fdf0ee;
+  --warn:#b07800;--warn-light:#fdf8ee;
+  --info:#1a5ca8;--info-light:#eaf1fc;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.09),0 2px 4px rgba(0,0,0,.05);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+a{color:inherit;text-decoration:none}
+
+/* ── LAYOUT ── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{padding:.875rem 1.5rem;border-bottom:1px solid var(--border);background:var(--card);display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.topbar-title{font-weight:600;font-size:15px;flex:1}
+.content{padding:1.5rem;flex:1}
+
+/* ── SIDEBAR ── */
+.logo{padding:1.25rem 1rem 1rem;font-weight:700;font-size:17px;letter-spacing:-.3px;border-bottom:1px solid var(--border)}
+.logo span{color:var(--accent)}
+.logo-sub{font-size:10px;font-weight:400;color:var(--text3);letter-spacing:.02em;display:block;margin-top:1px}
+.nav{padding:.5rem}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .12s;margin-bottom:1px}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:500}
+.sidebar-bottom{margin-top:auto;padding:.75rem;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:8px;padding:6px 8px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0}
+.user-name{font-size:13px;font-weight:500;flex:1}
+.btn-logout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px}
+.btn-logout:hover{color:var(--danger)}
+
+/* ── HAMBURGER ── */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:4px;margin-right:4px}
+.hamburger span{display:block;width:18px;height:2px;background:var(--text);border-radius:2px}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:149}
+.mob-overlay.open{display:block}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-weight:600;font-size:13px;margin-bottom:1rem;color:var(--text)}
+.section-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:none;transition:all .12s;white-space:nowrap}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#155a31}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-danger-soft{background:var(--danger-light);color:var(--danger);border:1px solid #f0c4c0}
+.btn-danger-soft:hover{background:#f8dbd8}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-full{width:100%;justify-content:center;padding:10px}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+.stat{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow)}
+.stat-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-.5px}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1rem;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--bg)}
+th{padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500}
+.badge-green{background:var(--accent-light);color:var(--accent)}
+.badge-red{background:var(--danger-light);color:var(--danger)}
+.badge-amber{background:var(--warn-light);color:var(--warn)}
+.badge-blue{background:var(--info-light);color:var(--info)}
+.badge-gray{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.badge-inv{background:#f0f0ee;color:var(--text2);border:1px solid var(--border);font-size:10px;padding:1px 5px}
+.badge-cr{background:var(--warn-light);color:var(--warn);border:1px solid #e8d48a;font-size:10px;padding:1px 5px}
+.cash-banner{background:var(--info-light);border:1px solid #b8d0f0;border-radius:var(--radius-lg);padding:.875rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--info);font-weight:500}
+.confirm-step{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.pay-chk{width:20px;height:20px;cursor:pointer;accent-color:var(--accent);flex-shrink:0}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px}
+.form-input,.form-select,.form-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:14px;font-family:inherit;color:var(--text);background:var(--card);transition:border-color .12s,box-shadow .12s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,60,.08)}
+.form-textarea{resize:vertical;min-height:72px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-hint{font-size:11px;color:var(--text3);margin-top:3px}
+.form-input.err,.form-select.err,.form-textarea.err{border-color:var(--danger);box-shadow:0 0 0 3px rgba(192,57,43,.08)}
+.field-err{font-size:11px;color:var(--danger);margin-top:3px;display:none}
+.field-err.show{display:block}
+
+/* ── ALERT ── */
+.alert{border-radius:var(--radius);padding:.875rem 1rem;font-size:13px;margin-bottom:1rem;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.alert-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.alert-warn{background:var(--warn-light);border:1px solid #e8d48a;color:var(--warn)}
+.alert-danger{background:var(--danger-light);border:1px solid #f0c4c0;color:var(--danger)}
+.alert-info{background:var(--info-light);border:1px solid #b8d0f0;color:var(--info)}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--card);border-radius:var(--radius-lg);padding:1.75rem;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:1.25rem}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
+
+/* ── UPLOAD ── */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--radius-lg);padding:1.75rem;text-align:center;cursor:pointer;transition:all .15s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-light)}
+.upload-zone input{display:none}
+.upload-zone p{font-size:13px;color:var(--text2);margin-top:4px}
+.file-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-top:6px;font-size:12px;color:var(--text2)}
+.file-row.dup-warn{border-color:#e8d48a;background:var(--warn-light)}
+.file-row-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.file-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;line-height:1;padding:0}
+.file-rm:hover{color:var(--danger)}
+
+/* ── PERIOD PILLS ── */
+.periods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:.25rem}
+.period-pill{padding:7px 6px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;text-align:center;transition:all .12s}
+.period-pill:hover{border-color:var(--border2);color:var(--text)}
+.period-pill.on{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+
+/* ── RESULT ── */
+.result-banner{border-radius:var(--radius-lg);padding:1.5rem;text-align:center;margin-bottom:1rem}
+.result-refund{background:var(--accent-light);border:1px solid var(--accent-mid)}
+.result-pay{background:var(--danger-light);border:1px solid #f0c4c0}
+.result-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.result-refund .result-label{color:var(--accent)}
+.result-pay .result-label{color:var(--danger)}
+.result-amount{font-size:36px;font-weight:700;letter-spacing:-1px;line-height:1.1}
+.result-refund .result-amount{color:var(--accent)}
+.result-pay .result-amount{color:var(--danger)}
+.vat3-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);align-items:baseline;gap:8px}
+.vat3-row:last-child{border:none;padding-top:10px;font-weight:600}
+.vat3-key{font-size:11px;font-weight:700;color:var(--text3);min-width:28px;font-family:monospace;flex-shrink:0}
+
+/* ── VAT BREAKDOWN TABLE ── */
+.bd-table{width:100%;border-collapse:collapse;margin-top:.75rem;font-size:12px}
+.bd-table th{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;padding:5px 0;border-bottom:1px solid var(--border);text-align:left}
+.bd-table th:not(:first-child){text-align:right}
+.bd-table td{padding:5px 0;border-bottom:1px solid var(--border);color:var(--text2)}
+.bd-table td:not(:first-child){text-align:right;font-family:monospace}
+.bd-table tr:last-child td{border-bottom:none}
+
+/* ── COUNTRY & FIELD BADGES ── */
+.badge-country-ie{background:#f0f0ee;color:var(--text2);border:1px solid var(--border);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-country-eu{background:var(--info-light);color:var(--info);border:1px solid #b8d0f0;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-country-gb{background:var(--warn-light);color:var(--warn);border:1px solid #e8d48a;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-country-other{background:var(--danger-light);color:var(--danger);border:1px solid #f0c4c0;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-field-t{background:#f0f0ee;color:var(--text2);border:1px solid var(--border);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-field-eu{background:var(--info-light);color:var(--info);border:1px solid #b8d0f0;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-field-rc{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-field-pa{background:var(--warn-light);color:var(--warn);border:1px solid #e8d48a;font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+.badge-field-exp{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600}
+
+/* ── OVERRIDE BUTTONS ── */
+.override-btn{background:none;border:1px solid var(--border);border-radius:6px;font-size:11px;padding:2px 7px;cursor:pointer;font-family:inherit;color:var(--text2);transition:all .12s;white-space:nowrap}
+.override-btn:hover{border-color:var(--border2)}
+.override-btn.to-excl{border-color:#f0c4c0;color:var(--danger);background:var(--danger-light)}
+.override-btn.to-incl{border-color:var(--accent-mid);color:var(--accent);background:var(--accent-light)}
+
+/* ── SUMMARY BOX ── */
+.summary-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;font-size:12px;line-height:1.8;white-space:pre;font-family:monospace;max-height:320px;overflow-y:auto}
+
+/* ── SPINNER ── */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .65s linear infinite;vertical-align:middle}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── PROGRESS ── */
+.progress-wrap{margin-top:8px;display:none}
+.progress-track{background:var(--bg);border-radius:999px;height:4px;overflow:hidden;border:1px solid var(--border)}
+.progress-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .3s}
+.progress-msg{font-size:11px;color:var(--text2);margin-top:4px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:#18181a;color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;display:none;align-items:center;gap:8px;z-index:200;box-shadow:var(--shadow-md);max-width:340px}
+.toast.show{display:flex}
+
+/* ── LOGIN ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:380px;max-width:95vw;box-shadow:var(--shadow-md)}
+.login-logo{font-size:22px;font-weight:700;margin-bottom:2px;letter-spacing:-.4px}
+.login-logo span{color:var(--accent)}
+.login-hint{font-size:12px;color:var(--text3);margin-top:12px;text-align:center}
+.login-err{color:var(--danger);font-size:12px;margin-top:8px;text-align:center;display:none}
+
+/* ── BREADCRUMB ── */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);margin-bottom:1.25rem}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--accent)}
+
+/* ── HISTORY ── */
+.history-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:6px;cursor:pointer;transition:border-color .12s,box-shadow .12s;box-shadow:var(--shadow)}
+.history-row:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.history-period{font-weight:500;font-size:13px;flex:1}
+.history-meta{font-size:11px;color:var(--text2)}
+.history-amount{font-size:13px;font-weight:600}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text2)}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+.empty-title{font-weight:600;color:var(--text);margin-bottom:4px}
+.empty-sub{font-size:13px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:1rem}
+.tab{padding:6px 14px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:500;cursor:pointer;background:transparent;font-family:inherit;color:var(--text2);transition:all .12s}
+.tab:hover{color:var(--text)}
+.tab.on{background:var(--card);border-color:var(--border);color:var(--text);box-shadow:var(--shadow)}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .hamburger{display:flex}
+  .sidebar{position:fixed;left:-240px;top:0;bottom:0;width:220px;z-index:150;transition:left .25s;box-shadow:var(--shadow-md)}
+  .sidebar.open{left:0}
+  .stats{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .periods{grid-template-columns:repeat(2,1fr)}
+  #view-vat>div,#view-detail>div{display:block!important}
+  #view-vat>div>div:last-child{margin-top:1rem}
+}
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr}
+  .content{padding:1rem}
+  .topbar{padding:.75rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">VAT<span>wise</span> Ireland</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;margin-top:2px">Accountant portal</p>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="le" type="email" value="admin@vatwise.ie" placeholder="admin@vatwise.ie">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="lp" type="password" value="admin123" placeholder="••••••••">
+    </div>
+    <div style="border-top:1px solid var(--border);margin:1rem 0;padding-top:1rem">
+      <label class="form-label" style="display:flex;align-items:center;gap:6px">
+        Anthropic API Key
+        <a href="https://console.anthropic.com/settings/keys" target="_blank" style="font-size:11px;color:var(--accent)">Get key ↗</a>
+      </label>
+      <input class="form-input" id="lapikey" type="password" placeholder="sk-ant-api03-…" style="font-family:monospace;font-size:12px">
+      <p class="form-hint" style="margin-top:4px">Required for AI invoice analysis. Stored locally in your browser only.</p>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="login()">Sign in →</button>
+    <div class="login-err" id="lerr">Incorrect email or password.</div>
+    <div class="login-hint">Demo: admin@vatwise.ie / admin123</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="app" style="display:none">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="logo">VAT<span>wise</span><span class="logo-sub">Ireland — VAT Returns</span></div>
+    <div class="nav">
+      <div class="nav-item active" id="nav-dash" onclick="go('dash')">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" id="nav-clients" onclick="go('clients')">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="3"/><path d="M1 14c0-3 2.5-5 5-5s5 2 5 5"/><circle cx="12.5" cy="6" r="2"/><path d="M15 14c0-2-1-3.5-2.5-3.5"/></svg>
+        Clients
+      </div>
+      <div class="nav-item" id="nav-vat" onclick="go('vat')">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="12" height="14" rx="2"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/></svg>
+        VAT Return
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="user-row">
+        <div class="avatar" id="ava">AD</div>
+        <div class="user-name">Admin</div>
+        <button class="btn-logout" onclick="logout()">Sign out</button>
+      </div>
+      <div style="padding:4px 8px 2px">
+        <div id="apiKeyStatus" style="font-size:11px;color:var(--text3)"></div>
+        <button onclick="promptApiKey()" style="background:none;border:none;font-size:11px;color:var(--accent);cursor:pointer;padding:0;font-family:inherit">Change API key</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mob-overlay" id="mobOverlay" onclick="closeSidebar()"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="hamburger" onclick="openSidebar()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div id="topbarRight"></div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dash">
+        <div class="stats" id="dashStats"></div>
+        <div class="section-label">Clients</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Industry</th><th>VAT No.</th><th>Returns</th><th>Status</th></tr></thead>
+            <tbody id="dashTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div class="view" id="view-clients">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Industry</th><th>VAT No.</th><th>Status</th><th>Returns</th><th></th></tr></thead>
+            <tbody id="clientsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CLIENT DETAIL -->
+      <div class="view" id="view-detail">
+        <div class="breadcrumb">
+          <span onclick="go('clients')">Clients</span>
+          <span style="color:var(--text3)">›</span>
+          <span id="detailName" style="color:var(--text);font-weight:500;cursor:default"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:260px 1fr;gap:1rem">
+          <div id="detailInfo"></div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+              <div class="section-label" style="margin:0">VAT return history</div>
+              <button class="btn btn-primary btn-sm" onclick="goVATForClient()">+ New return</button>
+            </div>
+            <div id="detailHistory"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VAT RETURN -->
+      <div class="view" id="view-vat">
+        <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:1.5rem">
+
+          <!-- LEFT -->
+          <div>
+            <div class="card">
+              <div class="card-title">Client & period</div>
+              <div class="form-group">
+                <label class="form-label">Client *</label>
+                <select class="form-select" id="vatClient" onchange="onClientPick()">
+                  <option value="">— Select client —</option>
+                </select>
+                <div class="field-err" id="errVatClient">Please select a client.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Year</label>
+                <select class="form-select" id="vatYear">
+                  <option>2026</option><option>2025</option><option>2024</option><option>2023</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bi-monthly period *</label>
+                <div class="periods" id="periodPills"></div>
+                <div class="field-err" id="errPeriod">Please select a period.</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Business description *</div>
+              <textarea class="form-textarea" id="vatDesc" placeholder="Describe the business — the AI uses this to filter out any personal/private expenses…"></textarea>
+              <div class="field-err" id="errDesc">Please add a business description.</div>
+              <p class="form-hint" style="margin-top:5px">Auto-filled from client profile. Edit if needed.</p>
+            </div>
+
+            <div class="card">
+              <div class="tabs">
+                <button class="tab on" onclick="switchTab('pur',this)">Purchase invoices</button>
+                <button class="tab" onclick="switchTab('sal',this)">Sales invoices</button>
+              </div>
+              <div id="tabPur">
+                <div class="upload-zone" id="zPur" onclick="document.getElementById('fPur').click()"
+                     ondragover="dOver(event,'zPur')" ondragleave="dOut('zPur')" ondrop="dDrop(event,'pur')">
+                  <input type="file" id="fPur" multiple accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="addFiles('pur',this)">
+                  <div style="font-size:24px">📂</div>
+                  <div style="font-size:13px;font-weight:500;margin-top:4px">Upload purchase invoices</div>
+                  <p>PDF, JPG, PNG, TXT — drag & drop or click</p>
+                </div>
+                <div id="lPur"></div>
+              </div>
+              <div id="tabSal" style="display:none">
+                <div class="upload-zone" id="zSal" onclick="document.getElementById('fSal').click()"
+                     ondragover="dOver(event,'zSal')" ondragleave="dOut('zSal')" ondrop="dDrop(event,'sal')">
+                  <input type="file" id="fSal" multiple accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="addFiles('sal',this)">
+                  <div style="font-size:24px">🧾</div>
+                  <div style="font-size:13px;font-weight:500;margin-top:4px">Upload sales invoices</div>
+                  <p>PDF, JPG, PNG, TXT — drag & drop or click</p>
+                </div>
+                <div id="lSal"></div>
+              </div>
+              <div class="field-err" id="errFiles" style="margin-top:6px">Please upload at least one invoice.</div>
+            </div>
+
+            <button class="btn btn-primary btn-full" id="btnRun" onclick="runVAT()">Calculate VAT return</button>
+            <div class="progress-wrap" id="pWrap">
+              <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+              <div class="progress-msg" id="pMsg"></div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div id="resultPanel">
+            <div class="empty">
+              <div class="empty-icon">📋</div>
+              <div class="empty-title">No results yet</div>
+              <div class="empty-sub">Select a client, upload invoices and click Calculate.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- CLIENT MODAL -->
+<div class="overlay" id="mClient">
+  <div class="modal">
+    <div class="modal-title" id="mClientTitle">New client</div>
+    <div class="modal-sub">Fill in the client details</div>
+    <input type="hidden" id="cId">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Company name *</label>
+        <input class="form-input" id="cName" placeholder="Murphy Ltd">
+        <div class="field-err" id="errCName">Required.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="cEmail" type="email" placeholder="info@example.ie">
+        <div class="field-err" id="errCEmail">Required.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">VAT number</label>
+        <input class="form-input" id="cVAT" placeholder="IE1234567A">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" id="cPhone" placeholder="+353 1 234 5678">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <select class="form-select" id="cInd">
+          <option>IT & Software</option><option>Consulting</option><option>Retail (B2C)</option>
+          <option>Wholesale (B2B)</option><option>Construction</option><option>Hospitality</option>
+          <option>Healthcare</option><option>Education</option><option>Real estate</option>
+          <option>Transport</option><option>Agriculture</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="cStatus">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">VAT Basis</label>
+      <select class="form-select" id="cVatBasis">
+        <option value="invoice">Invoice Basis — VAT due when invoice is raised</option>
+        <option value="cash">Cash Receipts Basis — VAT due when payment is received</option>
+      </select>
+      <p class="form-hint">Cash Receipts Basis is available for businesses with annual turnover under €2 million.</p>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Business description (for AI expense filtering)</label>
+      <textarea class="form-textarea" id="cDesc" placeholder="Describe what the business does — used by the AI to decide whether an invoice is a valid business expense."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="cPostponedAccounting" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+        Registered for Postponed Accounting
+      </label>
+      <p class="form-hint">Tick if this client is registered with Revenue for Postponed Accounting on UK/third country imports. If ticked, UK/non-EU goods imports will be self-assessed in T1 and T2.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeM('mClient')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClient()">Save client</button>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN DETAIL MODAL -->
+<div class="overlay" id="mDetail">
+  <div class="modal" style="width:740px;max-width:96vw">
+    <div class="modal-title" id="mDTitle"></div>
+    <div class="modal-sub" id="mDSub"></div>
+    <div id="mDBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeM('mDetail')">Close</button>
+      <button class="btn btn-ghost" onclick="openSummary(window._detailResult)">📧 Email summary</button>
+      <button class="btn btn-primary" onclick="doExport(window._detailResult)">Export Excel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL SUMMARY MODAL -->
+<div class="overlay" id="mSummary">
+  <div class="modal" style="width:520px;max-width:96vw">
+    <div class="modal-title">Email summary</div>
+    <div class="modal-sub">Copy and send to your client.</div>
+    <div class="summary-box" id="summaryText"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeM('mSummary')">Close</button>
+      <button class="btn btn-primary" onclick="copySummary()">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+/* ─── STATE ─── */
+const CREDS={email:'admin@vatwise.ie',pass:'admin123'};
+const BIPERIODS=[
+  {id:'jan-feb',label:'Jan \u2013 Feb'},{id:'mar-apr',label:'Mar \u2013 Apr'},
+  {id:'may-jun',label:'May \u2013 Jun'},{id:'jul-aug',label:'Jul \u2013 Aug'},
+  {id:'sep-oct',label:'Sep \u2013 Oct'},{id:'nov-dec',label:'Nov \u2013 Dec'},
+];
+let S={clients:[],currentClient:null,selPeriod:null,purFiles:[],salFiles:[],lastResult:null};
+
+function load(){try{const d=localStorage.getItem('vw2');if(d)S.clients=JSON.parse(d).clients||[];}catch(e){}if(!S.clients.length)seed();}
+function save(){try{localStorage.setItem('vw2',JSON.stringify({clients:S.clients}));}catch(e){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+
+function seed(){
+  S.clients=[
+    {id:uid(),name:'Murphy Tech Ltd',email:'info@murphytech.ie',vat:'IE1234567A',phone:'+353 1 234 5678',ind:'IT & Software',status:'active',vatBasis:'invoice',desc:'Software development and IT consulting for SMEs in Ireland.',returns:[
+      {period:'Jan \u2013 Feb',year:'2025',date:'04/03/2025',outVAT:4525,inVAT:2150,net:2375,files:7,excl:1,notes:'',purchases:[],sales:[]}
+    ]},
+    {id:uid(),name:'Galway Hospitality Group',email:'vat@galwayh.ie',vat:'IE7654321B',phone:'+353 91 345 678',ind:'Hospitality',status:'active',vatBasis:'cash',desc:'Operates restaurants and hotels in the west of Ireland.',returns:[]},
+    {id:uid(),name:'Cork Builders Ltd',email:'vat@corkbuild.ie',vat:'IE9876543C',phone:'+353 21 456 789',ind:'Construction',status:'active',vatBasis:'invoice',desc:'Residential and commercial construction across Munster.',returns:[]},
+  ];
+  save();
+}
+
+load();
+buildPeriods();
+window.addEventListener('DOMContentLoaded',()=>{
+  const saved=localStorage.getItem('vw_apikey');
+  if(saved){const el=document.getElementById('lapikey');if(el)el.value=saved;}
+});
+
+/* ─── LOGIN ─── */
+function login(){
+  const e=document.getElementById('le').value.trim();
+  const p=document.getElementById('lp').value;
+  const apikey=document.getElementById('lapikey').value.trim();
+  if(e===CREDS.email&&p===CREDS.pass){
+    if(apikey)localStorage.setItem('vw_apikey',apikey);
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('mainApp').style.display='flex';
+    go('dash');
+    setTimeout(updateApiKeyStatus,100);
+  } else {
+    document.getElementById('lerr').style.display='block';
+  }
+}
+function getApiKey(){return localStorage.getItem('vw_apikey')||'';}
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+function promptApiKey(){
+  const k=prompt('Enter your Anthropic API key (sk-ant-\u2026):','');
+  if(k&&k.trim()){localStorage.setItem('vw_apikey',k.trim());updateApiKeyStatus();toast('API key saved.');}
+}
+function updateApiKeyStatus(){
+  const el=document.getElementById('apiKeyStatus');if(!el)return;
+  const k=getApiKey();
+  el.textContent=k?'API key: '+k.slice(0,10)+'\u2026':'No API key set';
+  el.style.color=k?'var(--accent)':'var(--danger)';
+}
+function logout(){
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+}
+
+/* ─── MOBILE SIDEBAR ─── */
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('mobOverlay').classList.add('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobOverlay').classList.remove('open');}
+
+/* ─── NAV ─── */
+const titles={dash:'Dashboard',clients:'Clients',vat:'New VAT Return',detail:'Client detail'};
+const rights={
+  dash:'',
+  clients:'<button class="btn btn-primary btn-sm" onclick="openClient()">+ New client</button>',
+  vat:'',detail:''
+};
+function go(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('view-'+v);if(el)el.classList.add('active');
+  const ni=document.getElementById('nav-'+v);if(ni)ni.classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[v]||'';
+  document.getElementById('topbarRight').innerHTML=rights[v]||'';
+  if(v==='dash')renderDash();
+  if(v==='clients')renderClients();
+  if(v==='vat')renderVATView();
+  closeSidebar();
+}
+
+/* ─── DASHBOARD ─── */
+function renderDash(){
+  const total=S.clients.length;
+  const active=S.clients.filter(c=>c.status==='active').length;
+  const allR=S.clients.flatMap(c=>c.returns||[]);
+  document.getElementById('dashStats').innerHTML=`
+    <div class="stat"><div class="stat-label">Total clients</div><div class="stat-value" style="color:var(--accent)">${total}</div></div>
+    <div class="stat"><div class="stat-label">Active clients</div><div class="stat-value">${active}</div></div>
+    <div class="stat"><div class="stat-label">VAT returns filed</div><div class="stat-value">${allR.length}</div></div>`;
+  const tb=document.getElementById('dashTable');
+  if(!S.clients.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:2rem">No clients yet</td></tr>';return;}
+  tb.innerHTML=S.clients.map(c=>`<tr style="cursor:pointer" onclick="openDetail('${c.id}')">
+    <td><strong>${c.name}</strong> ${vatBadge(c.vatBasis)}</td>
+    <td style="color:var(--text2)">${c.ind}</td>
+    <td style="font-size:12px;color:var(--text2)">${c.vat||'\u2014'}</td>
+    <td>${(c.returns||[]).length}</td>
+    <td>${sb(c.status)}</td>
+  </tr>`).join('');
+}
+
+/* ─── CLIENTS ─── */
+function renderClients(){
+  const tb=document.getElementById('clientsTable');
+  if(!S.clients.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">👤</div><div class="empty-title">No clients yet</div><div class="empty-sub">Click "+ New client" to add one.</div></div></td></tr>';return;}
+  tb.innerHTML=S.clients.map(c=>`<tr>
+    <td><strong>${c.name}</strong></td>
+    <td style="font-size:12px;color:var(--text2)">${c.email}</td>
+    <td style="font-size:12px">${c.ind}</td>
+    <td style="font-size:12px;color:var(--text2)">${c.vat||'\u2014'}</td>
+    <td>${sb(c.status)}</td>
+    <td style="font-size:12px">${(c.returns||[]).length}</td>
+    <td><div style="display:flex;gap:5px">
+      <button class="btn btn-ghost btn-sm" onclick="openDetail('${c.id}')">View</button>
+      <button class="btn btn-ghost btn-sm" onclick="editClient('${c.id}')">Edit</button>
+      <button class="btn btn-danger-soft btn-sm" onclick="delClient('${c.id}')">Delete</button>
+    </div></td>
+  </tr>`).join('');
+}
+function sb(s){return s==='active'?'<span class="badge badge-green">Active</span>':'<span class="badge badge-red">Inactive</span>';}
+function vatBadge(vatBasis){return vatBasis==='cash'?'<span class="badge badge-cr">CR</span>':'<span class="badge badge-inv">INV</span>';}
+
+/* ─── VALIDATION ─── */
+function setFieldErr(inputId,errId,show){
+  if(inputId){const inp=document.getElementById(inputId);if(inp)inp.classList.toggle('err',show);}
+  const err=document.getElementById(errId);if(err)err.classList.toggle('show',show);
+}
+
+/* ─── CLIENT CRUD ─── */
+function openClient(){
+  document.getElementById('mClientTitle').textContent='New client';
+  document.getElementById('cId').value='';
+  ['cName','cEmail','cVAT','cPhone','cDesc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cStatus').value='active';
+  document.getElementById('cVatBasis').value='invoice';
+  document.getElementById('cPostponedAccounting').checked=false;
+  ['cName','cEmail'].forEach(id=>setFieldErr(id,id==='cName'?'errCName':'errCEmail',false));
+  openM('mClient');
+}
+function editClient(id){
+  const c=S.clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('mClientTitle').textContent='Edit client';
+  document.getElementById('cId').value=id;
+  document.getElementById('cName').value=c.name;
+  document.getElementById('cEmail').value=c.email;
+  document.getElementById('cVAT').value=c.vat||'';
+  document.getElementById('cPhone').value=c.phone||'';
+  document.getElementById('cInd').value=c.ind;
+  document.getElementById('cStatus').value=c.status;
+  document.getElementById('cVatBasis').value=c.vatBasis||'invoice';
+  document.getElementById('cDesc').value=c.desc||'';
+  document.getElementById('cPostponedAccounting').checked=c.postponedAccounting===true;
+  openM('mClient');
+}
+function saveClient(){
+  const name=document.getElementById('cName').value.trim();
+  const email=document.getElementById('cEmail').value.trim();
+  let ok=true;
+  if(!name){setFieldErr('cName','errCName',true);ok=false;}else{setFieldErr('cName','errCName',false);}
+  if(!email){setFieldErr('cEmail','errCEmail',true);ok=false;}else{setFieldErr('cEmail','errCEmail',false);}
+  if(!ok)return;
+  const id=document.getElementById('cId').value;
+  const obj={name,email,vat:document.getElementById('cVAT').value.trim(),phone:document.getElementById('cPhone').value.trim(),ind:document.getElementById('cInd').value,status:document.getElementById('cStatus').value,vatBasis:document.getElementById('cVatBasis').value,desc:document.getElementById('cDesc').value.trim(),postponedAccounting:document.getElementById('cPostponedAccounting').checked};
+  if(id){const c=S.clients.find(x=>x.id===id);if(c)Object.assign(c,obj);}
+  else{S.clients.push({id:uid(),...obj,returns:[]});}
+  save();closeM('mClient');toast('Client saved.');renderClients();renderDash();
+}
+function delClient(id){
+  const c=S.clients.find(x=>x.id===id);if(!c)return;
+  if(!confirm(`Delete "${c.name}"? This cannot be undone.`))return;
+  S.clients=S.clients.filter(x=>x.id!==id);save();toast('Client deleted.');renderClients();renderDash();
+}
+
+/* ─── CLIENT DETAIL ─── */
+function openDetail(id){
+  S.currentClient=id;
+  const c=S.clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('detailName').textContent=c.name;
+  document.getElementById('detailInfo').innerHTML=`
+    <div class="card">
+      <div class="card-title">Client info</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Email</div><strong>${c.email}</strong></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">VAT number</div><strong>${c.vat||'\u2014'}</strong></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Industry</div><strong>${c.ind}</strong></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Phone</div><strong>${c.phone||'\u2014'}</strong></div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Status</div>${sb(c.status)}</div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">VAT Basis</div><strong>${(c.vatBasis||'invoice')==='cash'?'Cash Receipts Basis':'Invoice Basis'}</strong> ${vatBadge(c.vatBasis)}</div>
+        <div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Postponed Accounting</div><strong>${c.postponedAccounting?'Registered':'Not registered'}</strong></div>
+        ${c.desc?`<div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Business description</div><span style="color:var(--text2);font-size:12px">${c.desc}</span></div>`:''}
+      </div>
+      <div style="margin-top:1rem"><button class="btn btn-ghost btn-sm" onclick="editClient('${c.id}')">Edit client</button></div>
+    </div>`;
+  const rets=c.returns||[];
+  const hEl=document.getElementById('detailHistory');
+  if(!rets.length){
+    hEl.innerHTML='<div class="empty" style="padding:2rem"><div class="empty-icon">📋</div><div class="empty-title">No returns yet</div><div class="empty-sub">Start a new VAT return for this client.</div></div>';
+  } else {
+    hEl.innerHTML=rets.slice().reverse().map((r,ri)=>{
+      const orig=rets.length-1-ri;
+      const ref=r.net<0;
+      return `<div class="history-row" onclick="showReturn('${c.id}',${orig})">
+        <div>
+          <div class="history-period">${r.period} ${r.year}${r.rcVAT>0?'<span class="badge badge-blue" style="margin-left:6px;font-size:10px">RC</span>':''}</div>
+          <div class="history-meta">${r.date} \u00b7 ${r.files||0} invoices \u00b7 ${r.excl||0} filtered${r.notes?' \u00b7 \uD83D\uDCDD':''}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="history-amount" style="color:${ref?'var(--accent)':'var(--danger)'}">${eur(Math.abs(r.net))}</div>
+          <div style="font-size:11px;color:var(--text2)">${ref?'Refund':'Payment'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-detail').classList.add('active');
+  document.getElementById('pageTitle').textContent=c.name;
+  document.getElementById('topbarRight').innerHTML='';
+}
+
+function goVATForClient(){
+  go('vat');
+  document.getElementById('nav-vat').classList.add('active');
+  const c=S.clients.find(x=>x.id===S.currentClient);
+  if(c){document.getElementById('vatClient').value=c.id;document.getElementById('vatDesc').value=c.desc||'';}
+}
+
+function showReturn(cid,idx){
+  const c=S.clients.find(x=>x.id===cid);if(!c)return;
+  const r=c.returns[idx];if(!r)return;
+  window._detailResult=r;
+  document.getElementById('mDTitle').textContent=`${r.period} ${r.year} \u2014 VAT Return`;
+  document.getElementById('mDSub').textContent=c.name+' \u00b7 Submitted '+r.date;
+  document.getElementById('mDBody').innerHTML=buildResultHTML(r);
+  openM('mDetail');
+}
+
+/* ─── VAT RETURN VIEW ─── */
+function renderVATView(){
+  const sel=document.getElementById('vatClient');
+  sel.innerHTML='<option value="">— Select client —</option>'+S.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function buildPeriods(){
+  const el=document.getElementById('periodPills');if(!el)return;
+  el.innerHTML=BIPERIODS.map((p,i)=>`<button class="period-pill" id="pp${i}" onclick="pickPeriod(${i},'${p.label}')">${p.label}</button>`).join('');
+}
+function pickPeriod(i,label){
+  S.selPeriod=label;
+  document.querySelectorAll('.period-pill').forEach((b,j)=>b.classList.toggle('on',i===j));
+  setFieldErr('','errPeriod',false);
+}
+function onClientPick(){
+  const id=document.getElementById('vatClient').value;
+  const c=S.clients.find(x=>x.id===id);
+  document.getElementById('vatDesc').value=c?c.desc||'':'';
+  setFieldErr('vatClient','errVatClient',false);
+}
+function switchTab(t,btn){
+  document.getElementById('tabPur').style.display=t==='pur'?'block':'none';
+  document.getElementById('tabSal').style.display=t==='sal'?'block':'none';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+/* ─── FILE UPLOAD ─── */
+function dOver(e,z){e.preventDefault();document.getElementById(z).classList.add('drag');}
+function dOut(z){document.getElementById(z).classList.remove('drag');}
+function dDrop(e,t){e.preventDefault();dOut('z'+t.charAt(0).toUpperCase()+t.slice(1));Array.from(e.dataTransfer.files).forEach(f=>addFile(t,f));}
+function addFiles(t,inp){Array.from(inp.files).forEach(f=>addFile(t,f));inp.value='';}
+function addFile(t,f){
+  const arr=t==='pur'?S.purFiles:S.salFiles;
+  const key=f.name.toLowerCase().trim();
+  if(arr.some(x=>x.name.toLowerCase().trim()===key&&x.size===f.size)){toast(`"${f.name}" already added.`);return;}
+  arr.push(f);
+  renderFiles(t);
+  setFieldErr('','errFiles',false);
+}
+function rmFile(t,n){
+  if(t==='pur')S.purFiles=S.purFiles.filter(f=>f.name!==n);
+  else S.salFiles=S.salFiles.filter(f=>f.name!==n);
+  renderFiles(t);
+}
+function renderFiles(t){
+  const arr=t==='pur'?S.purFiles:S.salFiles;
+  const other=t==='pur'?S.salFiles:S.purFiles;
+  const otherNames=new Set(other.map(f=>f.name.toLowerCase().trim()));
+  const el=document.getElementById('l'+t.charAt(0).toUpperCase()+t.slice(1));
+  el.innerHTML=arr.map(f=>{
+    const xdup=otherNames.has(f.name.toLowerCase().trim());
+    const safe=f.name.replace(/'/g,"\\'");
+    return `<div class="file-row${xdup?' dup-warn':''}">
+      <span style="font-size:14px">${f.name.toLowerCase().endsWith('.pdf')?'📄':'🖼'}</span>
+      <span class="file-row-name">${f.name}${xdup?' ⚠️':''}</span>
+      <span style="font-size:11px;color:var(--text3)">${(f.size/1024).toFixed(0)}KB</span>
+      <button class="file-rm" onclick="rmFile('${t}','${safe}')">×</button>
+    </div>`;
+  }).join('');
+}
+
+/* ─── DUPLICATE CHECK vs saved return ─── */
+function checkSavedDuplicates(cid,year){
+  const c=S.clients.find(x=>x.id===cid);if(!c)return[];
+  const r=c.returns.find(x=>x.period===S.selPeriod&&x.year===year);if(!r)return[];
+  const saved=new Set([...(r.purchases||[]).map(x=>x.filename?.toLowerCase()),...(r.sales||[]).map(x=>x.filename?.toLowerCase())].filter(Boolean));
+  return [...S.purFiles,...S.salFiles].filter(f=>saved.has(f.name.toLowerCase()));
+}
+
+/* ─── RUN ANALYSIS ─── */
+async function runVAT(){
+  const cid=document.getElementById('vatClient').value;
+  const desc=document.getElementById('vatDesc').value.trim();
+  const year=document.getElementById('vatYear').value;
+
+  let ok=true;
+  if(!cid){setFieldErr('vatClient','errVatClient',true);ok=false;}else{setFieldErr('vatClient','errVatClient',false);}
+  if(!S.selPeriod){setFieldErr('','errPeriod',true);ok=false;}else{setFieldErr('','errPeriod',false);}
+  if(!desc){setFieldErr('vatDesc','errDesc',true);ok=false;}else{setFieldErr('vatDesc','errDesc',false);}
+  if(!S.purFiles.length&&!S.salFiles.length){setFieldErr('','errFiles',true);ok=false;}else{setFieldErr('','errFiles',false);}
+  if(!ok)return;
+
+  const dups=checkSavedDuplicates(cid,year);
+  if(dups.length&&!confirm(`${dups.length} file(s) may already be in the saved return for this period:\n\n${dups.map(f=>f.name).join('\n')}\n\nContinue anyway?`))return;
+
+  const apiKey=getApiKey();
+  if(!apiKey){
+    document.getElementById('resultPanel').innerHTML=`<div class="alert alert-danger"><span class="alert-icon">⚠️</span><div><strong>API key missing.</strong> Click "Change API key" in the sidebar to add your Anthropic key.</div></div>`;
+    return;
+  }
+
+  const btn=document.getElementById('btnRun');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Analysing\u2026';
+  const pw=document.getElementById('pWrap');pw.style.display='block';
+  setP(5,'Reading files\u2026');
+
+  document.getElementById('resultPanel').innerHTML=`<div class="card"><div style="text-align:center;padding:2.5rem 1rem">
+    <div style="font-size:36px;margin-bottom:1rem">⏳</div>
+    <div style="font-weight:600;font-size:15px;margin-bottom:4px">AI is reading your invoices\u2026</div>
+    <div style="font-size:13px;color:var(--text2)">This may take 30\u201360 seconds depending on file count.</div>
+  </div></div>`;
+
+  try{
+    const purC=[],salC=[];
+    for(let i=0;i<S.purFiles.length;i++){
+      setP(5+i/Math.max(S.purFiles.length,1)*30,`Reading purchase invoice ${i+1}/${S.purFiles.length}\u2026`);
+      purC.push(await toContent(S.purFiles[i]));
+    }
+    for(let i=0;i<S.salFiles.length;i++){
+      setP(35+i/Math.max(S.salFiles.length,1)*30,`Reading sales invoice ${i+1}/${S.salFiles.length}\u2026`);
+      salC.push(await toContent(S.salFiles[i]));
+    }
+    setP(70,'Claude is analysing\u2026');
+
+    const sys=`You are an expert Irish VAT accountant. Analyse the uploaded invoices and return
+structured data for a VAT3 return to Irish Revenue Commissioners.
+
+IRISH VAT RATES:
+- 23%: Standard rate (most goods and services, IT, electronics, professional services)
+- 13.5%: Reduced rate (construction, catering/restaurants, fuel, repairs, short-term hire)
+- 9%: Second reduced rate (newspapers, sport, some tourism services)
+- 4.8%: Agriculture flat rate
+- 0%: Zero-rated (basic food, children's clothing, books, exports outside EU)
+- Exempt: Commercial rent, education, healthcare, financial services
+
+FILTERING RULE:
+If an expense is clearly personal/private and not related to the business described,
+set businessRelevant: false and explain in filterReason.
+
+COUNTRY DETECTION — set supplierLocation / customerLocation:
+- "ireland": Irish address, IE VAT number, or known Irish entity
+- "eu": Address in EU member state (Germany DE, France FR, Netherlands NL, Luxembourg LU,
+  Belgium BE, Spain ES, Italy IT, Portugal PT, Austria AT, Sweden SE, Denmark DK,
+  Finland FI, Poland PL, Czech Republic CZ, Hungary HU, Romania RO, Bulgaria BG,
+  Croatia HR, Slovakia SK, Slovenia SI, Estonia EE, Latvia LV, Lithuania LT,
+  Cyprus CY, Malta MT, Greece GR) — also applies to companies like AWS EMEA SARL
+  (Luxembourg), Google Ireland, Microsoft Ireland, Stripe (Ireland), Adobe Ireland,
+  Salesforce Ireland, HubSpot Ireland, Zoom (Netherlands), GitHub (Netherlands)
+- "uk": United Kingdom address (England, Scotland, Wales, Northern Ireland),
+  GB VAT number, or BT postcode (Northern Ireland)
+- "thirdcountry": Any other country (USA, Canada, Australia, India, China,
+  Switzerland, Norway, UAE, Singapore, etc.)
+
+GOODS VS SERVICE:
+- "goods": physical products shipped — hardware, equipment, furniture, raw materials,
+  food, clothing, machinery, components, printed materials, vehicles
+- "service": work performed or digital — software licences, SaaS subscriptions,
+  consulting, design, development, legal, accounting, advertising, cloud hosting,
+  transport services, maintenance contracts, training, insurance, financial services
+- "unknown": genuinely unclear — mixed invoices, vague descriptions like
+  "works completed", "supply and installation", "project delivery", "materials and labour"
+  → set needsClassification: true when transactionType is "unknown"
+
+REVERSE CHARGE DETECTION (EU suppliers):
+Set reverseCharge: true when ANY of these apply:
+- Invoice says "Reverse Charge", "Article 196 VAT Directive", "VAT to be accounted
+  for by recipient", "RCT applies"
+- Supplier is EU-based and provides a SERVICE with no VAT on the invoice
+- Supplier is a known EU digital/cloud provider (AWS, Google, Microsoft Azure,
+  Stripe, Adobe, Salesforce, Zoom, Slack, GitHub, HubSpot, etc.)
+- Invoice shows hours of work (e.g. "40 hours @ €80/hr") with no VAT from EU supplier
+When reverseCharge: true — calculate vatAmount = netAmount × 0.23
+Exception: construction/trade services from EU → use 0.135 instead
+Set vatRate: "Reverse Charge (23%)" or "Reverse Charge (13.5%)"
+Set grossAmount = netAmount (no VAT paid to supplier)
+
+POSTPONED ACCOUNTING (UK and third country imports):
+Set postponedAccounting: true when ALL of these apply:
+- supplierLocation is "uk" or "thirdcountry"
+- The transaction involves GOODS being physically imported into Ireland
+  OR services received from UK/third country (same self-assessment applies)
+- No Irish VAT is shown on the invoice
+When postponedAccounting: true — calculate vatAmount = netAmount × 0.23
+(use 0.135 for construction/installation services)
+Set vatRate: "Postponed Accounting (23%)"
+Set grossAmount = netAmount (no VAT paid to supplier — self-assessed by Irish company)
+This is cash neutral — same amount goes to T1 output AND T2 input on the VAT3 form.
+
+VAT FIELD ASSIGNMENT — set vatField:
+Purchases:
+- ireland, any → "T2"
+- eu, goods, no RC → "E2" (also counted in T2)
+- eu, service, no RC → "ES2" (also counted in T2)
+- eu, reverseCharge: true → "RC" (counted in both T1 and T2)
+- eu, unknown → "unknown"
+- uk or thirdcountry → "PA1" (counted in both T1 and T2)
+
+Sales:
+- ireland, any → "T1"
+- eu, goods → "E1" (zero-rated, counted at 0% in T1)
+- eu, service → "ES1" (zero-rated, counted at 0% in T1)
+- eu, unknown → "unknown"
+- uk or thirdcountry → "Export" (zero-rated)
+
+IMPORTANT: Reply with ONLY a valid JSON object. No markdown, no backticks, no text before or after.
+
+{
+  "purchases": [
+    {
+      "filename": "",
+      "supplier": "",
+      "invoiceNo": "",
+      "date": "",
+      "description": "",
+      "netAmount": 0.00,
+      "vatAmount": 0.00,
+      "grossAmount": 0.00,
+      "vatRate": "23%",
+      "businessRelevant": true,
+      "filterReason": "",
+      "category": "",
+      "supplierCountry": "IE",
+      "supplierLocation": "ireland",
+      "transactionType": "service",
+      "vatField": "T2",
+      "reverseCharge": false,
+      "rcConfidence": "none",
+      "postponedAccounting": false,
+      "needsClassification": false
+    }
+  ],
+  "sales": [
+    {
+      "filename": "",
+      "customer": "",
+      "invoiceNo": "",
+      "date": "",
+      "description": "",
+      "netAmount": 0.00,
+      "vatAmount": 0.00,
+      "grossAmount": 0.00,
+      "vatRate": "23%",
+      "category": "",
+      "customerCountry": "IE",
+      "customerLocation": "ireland",
+      "transactionType": "service",
+      "vatField": "T1",
+      "needsClassification": false
+    }
+  ]
+}`;
+
+    const parts=[{type:'text',text:`Business: ${desc}\nPeriod: ${S.selPeriod} ${year}\n\n=== PURCHASE INVOICES (${S.purFiles.length} files) ===`}];
+    S.purFiles.forEach((f,i)=>{parts.push({type:'text',text:`--- Invoice ${i+1}: ${f.name} ---`});parts.push(purC[i]);});
+    parts.push({type:'text',text:`\n=== SALES INVOICES (${S.salFiles.length} files) ===`});
+    S.salFiles.forEach((f,i)=>{parts.push({type:'text',text:`--- Invoice ${i+1}: ${f.name} ---`});parts.push(salC[i]);});
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4096,system:sys,messages:[{role:'user',content:parts}]})
+    });
+    setP(90,'Building results\u2026');
+    const data=await res.json();
+    if(data.error){
+      let msg=data.error.message||'Unknown API error.';
+      if(res.status===401)msg='Invalid API key. Click "Change API key" in the sidebar and enter a valid Anthropic key.';
+      else if(res.status===429)msg='Rate limit reached. Please wait a moment and try again.';
+      else if(res.status>=500)msg='Anthropic API is temporarily unavailable. Please try again in a few minutes.';
+      throw new Error(msg);
+    }
+    const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    let parsed;
+    try{parsed=JSON.parse(raw);}catch(e){throw new Error('AI returned unexpected format. Please try again.');}
+    setP(100,'Done!');
+    processResult(parsed,cid,year);
+  } catch(err){
+    document.getElementById('resultPanel').innerHTML=`
+      <div class="alert alert-danger">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Analysis failed.</strong><br><span style="font-size:12px;line-height:1.6">${err.message}</span></div>
+      </div>`;
+    toast('Error: '+err.message.slice(0,80));
+  }
+  btn.disabled=false;btn.innerHTML='Calculate VAT return';
+  setTimeout(()=>{pw.style.display='none';},2000);
+}
+
+function setP(pct,msg){document.getElementById('pFill').style.width=pct+'%';document.getElementById('pMsg').textContent=msg;}
+
+async function toContent(file){
+  if(file.type.startsWith('image/')){const b=await b64(file);return{type:'image',source:{type:'base64',media_type:file.type,data:b}};}
+  if(file.type==='application/pdf'){const b=await b64(file);return{type:'document',source:{type:'base64',media_type:'application/pdf',data:b}};}
+  const t=await file.text();return{type:'text',text:`File: ${file.name}\n${t}`};
+}
+function b64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});}
+
+/* ─── PROCESS RESULT ─── */
+function processResult(data,cid,year){
+  const c=S.clients.find(x=>x.id===cid);
+  if(c&&(c.vatBasis||'invoice')==='cash'){
+    showPaymentConfirmation(data,cid,year);
+    return;
+  }
+  // Check for unclassified invoices before calculating
+  const purchases=data.purchases||[];
+  const sales=data.sales||[];
+  const unclassified=[...purchases,...sales].filter(r=>r.needsClassification===true);
+  if(unclassified.length){
+    showClassificationUI(data,cid,year);
+    return;
+  }
+  finaliseResult(data,cid,year);
+}
+
+function finaliseResult(data,cid,year){
+  const c=S.clients.find(x=>x.id===cid);
+  const purchases=data.purchases||[];
+  const sales=data.sales||[];
+
+  // Helper
+  const sum=(arr,field)=>arr.reduce((s,r)=>s+pf(r[field]||0),0);
+
+  // Categorise purchases
+  const eligible=purchases.filter(r=>r.businessRelevant!==false);
+  const rcItems=eligible.filter(r=>r.reverseCharge===true);
+  const paItems=eligible.filter(r=>r.postponedAccounting===true);
+  const normalPurchases=eligible.filter(r=>!r.reverseCharge&&!r.postponedAccounting);
+
+  // Categorise sales
+  const normalSales=sales.filter(r=>r.customerLocation==='ireland');
+  const euSales=sales.filter(r=>r.customerLocation==='eu');
+  const exportSales=sales.filter(r=>r.customerLocation==='uk'||r.customerLocation==='thirdcountry');
+
+  // T1 = Irish sales VAT + RC self-assessed VAT + PA self-assessed VAT
+  const salesVAT=r2(sum(normalSales,'vatAmount'));
+  const rcVAT=r2(sum(rcItems,'vatAmount'));
+  const paVAT=r2(sum(paItems,'vatAmount'));
+  const T1=r2(salesVAT+rcVAT+paVAT);
+
+  // T2 = ALL eligible purchase VAT (includes RC and PA amounts)
+  const T2=r2(sum(eligible,'vatAmount'));
+
+  // Net
+  const net=r2(T1-T2);
+
+  // EU fields — NET amounts (not VAT)
+  const euGoodsPurchases=eligible.filter(r=>r.supplierLocation==='eu'&&r.transactionType==='goods'&&!r.reverseCharge);
+  const euServicePurchases=eligible.filter(r=>r.supplierLocation==='eu'&&r.transactionType==='service'&&!r.reverseCharge);
+  const euGoodsSales=euSales.filter(r=>r.transactionType==='goods');
+  const euServiceSales=euSales.filter(r=>r.transactionType==='service');
+
+  const E1=r2(sum(euGoodsSales,'netAmount'));
+  const ES1=r2(sum(euServiceSales,'netAmount'));
+  const E2=r2(sum(euGoodsPurchases,'netAmount'));
+  const ES2=r2(sum(euServicePurchases,'netAmount'));
+  const PA1=r2(sum(paItems,'vatAmount'));
+
+  const totalSalesNet=r2(sum(sales,'netAmount'));
+  const totalPurNet=r2(sum(eligible,'netAmount'));
+
+  const result={
+    period:S.selPeriod,year,
+    date:new Date().toLocaleDateString('en-IE'),
+    // Legacy fields kept for backward compat
+    outVAT:T1,inVAT:T2,net,
+    // New T1/T2 breakdown
+    T1,T2,salesVAT,rcVAT,paVAT,
+    E1,ES1,E2,ES2,PA1,
+    rcCount:rcItems.length,paCount:paItems.length,
+    totalSalesNet,totalPurNet,
+    files:S.purFiles.length+S.salFiles.length,
+    excl:purchases.filter(r=>r.businessRelevant===false).length,
+    notes:'',purchases,sales
+  };
+
+  // Check if client is not registered for PA but has PA items
+  if(c&&!c.postponedAccounting&&paItems.length>0){
+    result._paWarning=true;
+  }
+
+  if(c){
+    c.returns=c.returns||[];
+    const ex=c.returns.findIndex(r=>r.period===S.selPeriod&&r.year===year);
+    if(ex>=0)c.returns[ex]=result;else c.returns.push(result);
+    save();
+  }
+  S.lastResult=result;
+  window._detailResult=result;
+  document.getElementById('resultPanel').innerHTML=buildResultHTML(result);
+  toast('VAT return calculated.');
+}
+
+/* ─── MANUAL CLASSIFICATION UI ─── */
+function showClassificationUI(data,cid,year){
+  window._pendingClassData=data;
+  window._pendingClassCid=cid;
+  window._pendingClassYear=year;
+  const purchases=data.purchases||[];
+  const sales=data.sales||[];
+  const unclassified=[...purchases.map((r,i)=>({...r,_type:'purchase',_idx:i})),...sales.map((r,i)=>({...r,_type:'sale',_idx:i}))].filter(r=>r.needsClassification===true);
+  const total=unclassified.length;
+  let classified=0;
+
+  function renderCards(){
+    classified=0;
+    const remaining=unclassified.filter(r=>r.transactionType==='unknown'||r.needsClassification===true);
+    unclassified.forEach(r=>{if(r.transactionType!=='unknown'&&!r.needsClassification)classified++;});
+    const rem=total-classified;
+    const counterEl=document.getElementById('classCounter');
+    if(counterEl)counterEl.textContent=`${classified} of ${total} classified — ${rem} remaining`;
+    const calcBtn=document.getElementById('btnClassCalc');
+    if(calcBtn)calcBtn.disabled=rem>0;
+    const cardsEl=document.getElementById('classCards');
+    if(!cardsEl)return;
+    cardsEl.innerHTML=unclassified.filter(r=>r.needsClassification===true||r.transactionType==='unknown').map((r,ci)=>{
+      const name=r._type==='purchase'?(r.supplier||'Unknown supplier'):(r.customer||'Unknown customer');
+      const loc=r._type==='purchase'?(r.supplierLocation||''):(r.customerLocation||'');
+      const code=r._type==='purchase'?(r.supplierCountry||''):(r.customerCountry||'');
+      return`<div class="card" id="classCard_${r._type}_${r._idx}" style="border-left:3px solid var(--warn)">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;margin-bottom:4px">${name}</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${r.description||''} &nbsp; ${countryBadge(loc,code)} &nbsp; <strong>${eur(r.netAmount)}</strong></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:14px;padding:10px" onclick="classifyInvoice('${r._type}',${r._idx},'goods')">📦 Goods</button>
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:14px;padding:10px" onclick="classifyInvoice('${r._type}',${r._idx},'service')">⚙ Service</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window._renderClassCards=renderCards;
+
+  document.getElementById('resultPanel').innerHTML=`
+    <div class="alert alert-warn" style="margin-bottom:1rem">
+      <span class="alert-icon">⚠</span>
+      <div><strong>${total} invoice(s) need your input</strong> — the AI could not determine if these are goods or services. Please classify them to complete the VAT3 calculation.</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div id="classCounter" style="font-size:13px;color:var(--text2)"></div>
+      <button class="btn btn-primary" id="btnClassCalc" disabled onclick="runFinalClassification()">Calculate VAT3 →</button>
+    </div>
+    <div id="classCards"></div>`;
+  renderCards();
+}
+
+function classifyInvoice(type,idx,classification){
+  const data=window._pendingClassData;
+  if(!data)return;
+  const arr=type==='purchase'?(data.purchases||[]):(data.sales||[]);
+  if(!arr[idx])return;
+  arr[idx].transactionType=classification;
+  arr[idx].needsClassification=false;
+  // Update vatField based on classification
+  const r=arr[idx];
+  if(type==='purchase'){
+    const loc=r.supplierLocation||'ireland';
+    if(loc==='ireland')r.vatField='T2';
+    else if(loc==='eu'&&classification==='goods'&&!r.reverseCharge)r.vatField='E2';
+    else if(loc==='eu'&&classification==='service'&&!r.reverseCharge)r.vatField='ES2';
+    else if(loc==='eu'&&r.reverseCharge)r.vatField='RC';
+    else if(loc==='uk'||loc==='thirdcountry')r.vatField='PA1';
+  } else {
+    const loc=r.customerLocation||'ireland';
+    if(loc==='ireland')r.vatField='T1';
+    else if(loc==='eu'&&classification==='goods')r.vatField='E1';
+    else if(loc==='eu'&&classification==='service')r.vatField='ES1';
+    else if(loc==='uk'||loc==='thirdcountry')r.vatField='Export';
+  }
+  const card=document.getElementById(`classCard_${type}_${idx}`);
+  if(card)card.style.display='none';
+  if(window._renderClassCards)window._renderClassCards();
+}
+
+function runFinalClassification(){
+  const data=window._pendingClassData;
+  const cid=window._pendingClassCid;
+  const year=window._pendingClassYear;
+  if(!data||!cid||!year)return;
+  // Clear pending
+  window._pendingClassData=null;
+  window._pendingClassCid=null;
+  window._pendingClassYear=null;
+  window._renderClassCards=null;
+  // Check Cash Receipts Basis
+  const c=S.clients.find(x=>x.id===cid);
+  if(c&&(c.vatBasis||'invoice')==='cash'){
+    showPaymentConfirmation(data,cid,year);
+  } else {
+    finaliseResult(data,cid,year);
+  }
+}
+
+/* ─── CASH RECEIPTS: PAYMENT CONFIRMATION ─── */
+function showPaymentConfirmation(data,cid,year){
+  window._pendingVATData=data;
+  window._pendingVATCid=cid;
+  window._pendingVATYear=year;
+  const purchases=data.purchases||[];
+  const sales=data.sales||[];
+  const purBiz=purchases.filter(x=>x.businessRelevant!==false);
+  const purExcl=purchases.filter(x=>x.businessRelevant===false);
+  let rows='';
+  sales.forEach((x,i)=>{
+    rows+=`<tr>
+      <td style="text-align:center;padding:8px 6px">
+        <label style="display:flex;justify-content:center;align-items:center;min-height:36px;cursor:pointer">
+          <input type="checkbox" class="pay-chk" data-type="sale" data-idx="${i}" onchange="updateDeferredCounter()" checked>
+        </label>
+      </td>
+      <td><span class="badge badge-blue" style="font-size:10px">Sale</span></td>
+      <td style="font-size:11px;font-family:monospace;color:var(--text3)">S${String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:500">${x.customer||'\u2014'}</td>
+      <td style="font-size:12px;color:var(--text2)">${x.description||'\u2014'}</td>
+      <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+      <td style="font-family:monospace;font-size:12px">${eur(x.vatAmount)}</td>
+      <td><span class="badge badge-gray">${x.vatRate||'\u2014'}</span></td>
+    </tr>`;
+  });
+  purBiz.forEach(x=>{
+    const origIdx=purchases.indexOf(x);
+    const isRC=x.reverseCharge===true||x.isReverseCharge===true;
+    rows+=`<tr>
+      <td style="text-align:center;padding:8px 6px">
+        <label style="display:flex;justify-content:center;align-items:center;min-height:36px;${isRC?'':'cursor:pointer'}">
+          <input type="checkbox" class="pay-chk" data-type="purchase" data-idx="${origIdx}" onchange="updateDeferredCounter()" checked${isRC?' disabled title="RC invoices are always included regardless of payment status"':''}>
+        </label>
+      </td>
+      <td><span class="badge badge-amber" style="font-size:10px">Purchase</span>${isRC?'<span class="badge badge-blue" style="margin-left:3px;font-size:10px">RC</span>':''}</td>
+      <td style="font-size:11px;font-family:monospace;color:var(--text3)">P${String(origIdx+1).padStart(2,'0')}</td>
+      <td style="font-weight:500">${x.supplier||'\u2014'}</td>
+      <td style="font-size:12px;color:var(--text2)">${x.description||'\u2014'}${isRC?'<br><span style="font-size:10px;color:var(--info)">RC — included regardless of payment status</span>':''}</td>
+      <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+      <td style="font-family:monospace;font-size:12px">${eur(x.vatAmount)}</td>
+      <td><span class="badge badge-gray">${x.vatRate||'\u2014'}</span></td>
+    </tr>`;
+  });
+  document.getElementById('resultPanel').innerHTML=`
+    <div class="cash-banner">&#8505;&#65039;&nbsp; <strong>Cash Receipts Basis</strong> \u2014 Check which invoices were paid in this period</div>
+    <div class="confirm-step">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">Payment Confirmation</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:1rem">Tick each invoice that was <strong>paid</strong> within this period. Unticked invoices will be deferred to the period when payment is received.</div>
+      <div class="table-wrap" style="margin-bottom:1rem"><table>
+        <thead><tr>
+          <th style="width:56px">Paid?</th><th style="width:70px">Type</th><th style="width:44px">#</th>
+          <th>Supplier / Customer</th><th>Description</th><th>Net</th><th>VAT</th><th>Rate</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      ${purExcl.length?`<div class="alert alert-danger" style="font-size:12px;margin-bottom:1rem"><span class="alert-icon">\uD83D\uDEAB</span><div><strong>${purExcl.length} invoice${purExcl.length>1?'s':''} already filtered out</strong> as private/non-business expenses — excluded automatically, not shown above.</div></div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1rem;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap">
+        <div id="deferredCounter" style="font-size:13px;color:var(--text2)"></div>
+        <button class="btn btn-primary" onclick="confirmPayments()" style="padding:10px 22px;font-size:14px;font-weight:600">Confirm payments &amp; calculate VAT3 \u2192</button>
+      </div>
+    </div>`;
+  updateDeferredCounter();
+}
+
+function updateDeferredCounter(){
+  const data=window._pendingVATData;if(!data)return;
+  const chks=document.querySelectorAll('.pay-chk');
+  let dCount=0,dVAT=0;
+  chks.forEach(chk=>{
+    if(!chk.checked){
+      const inv=chk.dataset.type==='sale'?(data.sales||[])[+chk.dataset.idx]:(data.purchases||[])[+chk.dataset.idx];
+      if(inv){dCount++;dVAT+=pf(inv.vatAmount);}
+    }
+  });
+  const el=document.getElementById('deferredCounter');
+  if(el)el.innerHTML=dCount>0
+    ?`<span style="color:var(--warn)">\u23f3 ${dCount} invoice${dCount>1?'s':''} deferred \u2014 ${eur(dVAT)} VAT deferred to next period</span>`
+    :'<span style="color:var(--accent)">\u2713 All invoices marked as paid</span>';
+}
+
+function confirmPayments(){
+  const data=window._pendingVATData;
+  const cid=window._pendingVATCid;
+  const year=window._pendingVATYear;
+  if(!data||!cid||!year)return;
+  (data.purchases||[]).forEach(x=>{x.paidInPeriod=true;});
+  (data.sales||[]).forEach(x=>{x.paidInPeriod=true;});
+  document.querySelectorAll('.pay-chk').forEach(chk=>{
+    const idx=+chk.dataset.idx;
+    if(chk.dataset.type==='sale'){if(data.sales[idx])data.sales[idx].paidInPeriod=chk.checked;}
+    else{if(data.purchases[idx])data.purchases[idx].paidInPeriod=chk.checked;}
+  });
+  const purchases=data.purchases||[];
+  const sales=data.sales||[];
+  const paidPur=purchases.filter(x=>x.businessRelevant!==false&&(x.paidInPeriod!==false||x.reverseCharge===true||x.isReverseCharge===true||x.postponedAccounting===true));
+  const paidSal=sales.filter(x=>x.paidInPeriod!==false);
+  const sum=(arr,field)=>arr.reduce((s,r)=>s+pf(r[field]||0),0);
+  const rcItems=paidPur.filter(x=>x.reverseCharge===true);
+  const paItems=paidPur.filter(x=>x.postponedAccounting===true);
+  const normalSales=paidSal.filter(x=>x.customerLocation==='ireland');
+  const salesVAT=r2(sum(normalSales,'vatAmount'));
+  const rcVAT=r2(sum(rcItems,'vatAmount'));
+  const paVAT=r2(sum(paItems,'vatAmount'));
+  const T1=r2(salesVAT+rcVAT+paVAT);
+  const T2=r2(sum(paidPur,'vatAmount'));
+  const net=r2(T1-T2);
+  const euSales=paidSal.filter(x=>x.customerLocation==='eu');
+  const E1=r2(sum(euSales.filter(x=>x.transactionType==='goods'),'netAmount'));
+  const ES1=r2(sum(euSales.filter(x=>x.transactionType==='service'),'netAmount'));
+  const E2=r2(sum(paidPur.filter(x=>x.supplierLocation==='eu'&&x.transactionType==='goods'&&!x.reverseCharge),'netAmount'));
+  const ES2=r2(sum(paidPur.filter(x=>x.supplierLocation==='eu'&&x.transactionType==='service'&&!x.reverseCharge),'netAmount'));
+  const PA1=r2(sum(paItems,'vatAmount'));
+  const totalSalesNet=r2(sum(paidSal,'netAmount'));
+  const totalPurNet=r2(sum(paidPur,'netAmount'));
+  const c=S.clients.find(x=>x.id===cid);
+  const result={
+    period:S.selPeriod,year,
+    date:new Date().toLocaleDateString('en-IE'),
+    vatBasis:'cash',
+    outVAT:T1,inVAT:T2,net,
+    T1,T2,salesVAT,rcVAT,paVAT,E1,ES1,E2,ES2,PA1,
+    rcCount:rcItems.length,paCount:paItems.length,
+    totalSalesNet,totalPurNet,
+    files:S.purFiles.length+S.salFiles.length,
+    excl:purchases.filter(x=>x.businessRelevant===false).length,
+    notes:'',purchases,sales,
+    _paWarning:(!c||!c.postponedAccounting)&&paItems.length>0
+  };
+  if(c){
+    c.returns=c.returns||[];
+    const ex=c.returns.findIndex(r=>r.period===S.selPeriod&&r.year===year);
+    if(ex>=0)c.returns[ex]=result;else c.returns.push(result);
+    save();
+  }
+  S.lastResult=result;
+  window._detailResult=result;
+  document.getElementById('resultPanel').innerHTML=buildResultHTML(result);
+  toast('VAT return calculated (Cash Receipts Basis).');
+}
+
+/* ─── MANUAL OVERRIDE ─── */
+function toggleOverride(idx){
+  const r=window._detailResult;
+  if(!r||!r.purchases[idx])return;
+  r.purchases[idx].businessRelevant=!r.purchases[idx].businessRelevant;
+  const isCash=r.vatBasis==='cash';
+  const eligible=isCash
+    ?r.purchases.filter(x=>x.businessRelevant!==false&&(x.paidInPeriod!==false||x.reverseCharge===true||x.isReverseCharge===true||x.postponedAccounting===true))
+    :r.purchases.filter(x=>x.businessRelevant!==false);
+  const paidSal=isCash?(r.sales||[]).filter(x=>x.paidInPeriod!==false):(r.sales||[]);
+  const sum=(arr,field)=>arr.reduce((s,x)=>s+pf(x[field]||0),0);
+  const rcItems=eligible.filter(x=>x.reverseCharge===true||x.isReverseCharge===true);
+  const paItems=eligible.filter(x=>x.postponedAccounting===true);
+  const normalSales=paidSal.filter(x=>x.customerLocation==='ireland');
+  const newSalesVAT=r2(sum(normalSales,'vatAmount'));
+  const newRcVAT=r2(sum(rcItems,'vatAmount'));
+  const newPaVAT=r2(sum(paItems,'vatAmount'));
+  const newT1=r2(newSalesVAT+newRcVAT+newPaVAT);
+  const newT2=r2(sum(eligible,'vatAmount'));
+  r.T1=newT1;r.T2=newT2;
+  r.outVAT=newT1;r.inVAT=newT2;
+  r.net=r2(newT1-newT2);
+  r.salesVAT=newSalesVAT;r.rcVAT=newRcVAT;r.paVAT=newPaVAT;
+  r.rcCount=rcItems.length;r.paCount=paItems.length;
+  r.excl=r.purchases.filter(x=>x.businessRelevant===false).length;
+  save();
+  const rp=document.getElementById('resultPanel');
+  if(rp&&rp.querySelector('.result-banner'))rp.innerHTML=buildResultHTML(r);
+  const mb=document.getElementById('mDBody');
+  if(mb&&mb.innerHTML)mb.innerHTML=buildResultHTML(r);
+}
+
+/* ─── NOTES ─── */
+function saveNote(){
+  const r=window._detailResult;if(!r)return;
+  const el=document.getElementById('returnNotes');
+  r.notes=el?el.value:'';
+  save();toast('Note saved.');
+}
+
+/* ─── VAT BREAKDOWN ─── */
+function computeBreakdown(invoices){
+  const bd={};
+  (invoices||[]).forEach(inv=>{
+    const rate=inv.vatRate||'Unknown';
+    if(!bd[rate])bd[rate]={net:0,vat:0};
+    bd[rate].net+=pf(inv.netAmount);
+    bd[rate].vat+=pf(inv.vatAmount);
+  });
+  return bd;
+}
+const RATE_ORDER=['0%','4.8%','9%','13.5%','23%','Reverse Charge (13.5%)','Reverse Charge (23%)','Postponed Accounting (23%)','Postponed Accounting (13.5%)','Exempt','Unknown'];
+function breakdownHTML(purchBD,salesBD){
+  const rates=new Set([...Object.keys(purchBD),...Object.keys(salesBD)]);
+  if(!rates.size)return '';
+  const sorted=[...rates].sort((a,b)=>{const ia=RATE_ORDER.indexOf(a),ib=RATE_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+  return `<div style="margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border)">
+    <div class="section-label" style="margin-bottom:.5rem">VAT breakdown by rate</div>
+    <table class="bd-table">
+      <thead><tr><th>Rate</th><th>Sales VAT</th><th>Purchase VAT</th></tr></thead>
+      <tbody>${sorted.map(rate=>`<tr>
+        <td><span class="badge badge-gray">${rate}</span></td>
+        <td>${salesBD[rate]?eur(salesBD[rate].vat):'\u2014'}</td>
+        <td>${purchBD[rate]?eur(purchBD[rate].vat):'\u2014'}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+/* ─── EMAIL SUMMARY ─── */
+function openSummary(r){
+  if(!r){toast('No result to summarise.');return;}
+  const isCash=r.vatBasis==='cash';
+  const purchases=r.purchases||[];
+  const sales=r.sales||[];
+  const eligible=isCash?purchases.filter(x=>x.businessRelevant!==false&&x.paidInPeriod!==false):purchases.filter(x=>x.businessRelevant!==false);
+  const excl=purchases.filter(x=>x.businessRelevant===false);
+  const rc=eligible.filter(x=>x.reverseCharge||x.isReverseCharge);
+  const ref=r.net<0;
+  const paidSal=isCash?sales.filter(x=>x.paidInPeriod!==false):sales;
+  const sNet=r2(paidSal.reduce((s,x)=>s+pf(x.netAmount),0));
+  const cNet=r2(eligible.reduce((s,x)=>s+pf(x.netAmount),0));
+  const deferredPur=isCash?purchases.filter(x=>x.businessRelevant!==false&&x.paidInPeriod===false):[];
+  const deferredSal=isCash?sales.filter(x=>x.paidInPeriod===false):[];
+  const deferredCount=deferredPur.length+deferredSal.length;
+  const deferredVAT=r2([...deferredPur,...deferredSal].reduce((s,x)=>s+pf(x.vatAmount),0));
+  const txt=`VAT Return Summary
+Period: ${r.period} ${r.year}
+Prepared: ${r.date}${isCash?'\nBasis:   Cash Receipts Basis':''}
+${'─'.repeat(38)}
+SALES${isCash?' (paid invoices only)':''}
+  Total sales (excl. VAT):     ${eur(sNet)}
+  VAT on sales (T1):           ${eur(r.outVAT)}
+
+PURCHASES${isCash?' (paid invoices only)':''}
+  Total purchases (excl. VAT): ${eur(cNet)}
+  VAT on purchases (T2):       ${eur(r.inVAT)}
+  Accepted invoices:           ${eligible.length}
+  Filtered out (private):      ${excl.length}${rc.length?`\n  Reverse charge items:       ${rc.length}`:''}${isCash&&deferredCount?`\n  Deferred (unpaid):          ${deferredCount} (${eur(deferredVAT)} VAT)`:''}
+${'─'.repeat(38)}
+RESULT
+${ref
+  ?`  VAT refund from Revenue (T4): ${eur(Math.abs(r.net))}`
+  :`  VAT payable to Revenue (T3):  ${eur(r.net)}`}
+${'─'.repeat(38)}${r.notes?`\nNOTES\n  ${r.notes}\n${'─'.repeat(38)}`:''}
+
+Please review and confirm the above at your earliest convenience.
+
+Prepared with VATwise Ireland.`;
+  document.getElementById('summaryText').textContent=txt;
+  openM('mSummary');
+}
+function copySummary(){
+  const txt=document.getElementById('summaryText').textContent;
+  navigator.clipboard.writeText(txt)
+    .then(()=>toast('Copied to clipboard!'))
+    .catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Copied!');});
+}
+
+/* ─── BUILD RESULT HTML ─── */
+function buildResultHTML(r){
+  const isCash=r.vatBasis==='cash';
+  const purchases=r.purchases||[];
+  const sales=r.sales||[];
+  const eligiblePur=purchases.filter(x=>x.businessRelevant!==false);
+  const excl=purchases.filter(x=>x.businessRelevant===false);
+  const paidPur=isCash?eligiblePur.filter(x=>x.paidInPeriod!==false||x.reverseCharge===true||x.isReverseCharge===true):eligiblePur;
+  const deferredPur=isCash?eligiblePur.filter(x=>x.paidInPeriod===false&&!x.reverseCharge&&!x.isReverseCharge):[];
+  const paidSal=isCash?sales.filter(x=>x.paidInPeriod!==false):sales;
+  const deferredSal=isCash?sales.filter(x=>x.paidInPeriod===false):[];
+  const rcItems=paidPur.filter(x=>x.reverseCharge===true||x.isReverseCharge===true);
+  const ref=r.net<0;
+  const sNet=r2(paidSal.reduce((s,x)=>s+pf(x.netAmount),0));
+  const cNet=r2(paidPur.reduce((s,x)=>s+pf(x.netAmount),0));
+  const purchBD=computeBreakdown(paidPur);
+  const salesBD=computeBreakdown([...paidSal,...rcItems]);
+  const deferredVAT=r2([...deferredPur,...deferredSal].reduce((s,x)=>s+pf(x.vatAmount),0));
+  const deferredCount=deferredPur.length+deferredSal.length;
+
+  return `
+    ${isCash?`<div class="cash-banner">&#8505;&#65039;&nbsp; <strong>Cash Receipts Basis</strong> \u2014 VAT calculated on paid invoices only</div>`:''}
+
+    <div class="${ref?'result-banner result-refund':'result-banner result-pay'}">
+      <div class="result-label">${ref?'Revenue owes you':'You owe Revenue'}</div>
+      <div class="result-amount">${eur(Math.abs(r.net))}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:5px">${r.period} ${r.year}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VAT3 form values</div>
+
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px">── CORE VAT ──</div>
+
+      <div class="vat3-row"><span class="vat3-key" title="VAT on sales (output tax). Includes Irish sales VAT, reverse charge self-assessed VAT, and postponed accounting VAT.">T1</span><span>VAT on sales (output) <span style="font-size:10px;color:var(--text3);cursor:help" title="T1 = Irish sales VAT + Reverse Charge VAT + Postponed Accounting VAT">ℹ</span></span><strong>${eur(r.T1||r.outVAT||0)}</strong></div>
+      <div style="padding:2px 0 2px 28px;font-size:12px;color:var(--text2);display:flex;justify-content:space-between"><span>└ Irish sales VAT:</span><span style="font-family:monospace">${eur(r.salesVAT||0)}</span></div>
+      ${(r.rcVAT||0)>0?`<div style="padding:2px 0 2px 28px;font-size:12px;color:var(--info);display:flex;justify-content:space-between"><span>└ Reverse charge (EU):</span><span style="font-family:monospace">${eur(r.rcVAT)}</span></div>`:''}
+      ${(r.paVAT||0)>0?`<div style="padding:2px 0 4px 28px;font-size:12px;color:var(--warn);display:flex;justify-content:space-between"><span>└ Postponed accounting:</span><span style="font-family:monospace">${eur(r.paVAT)}</span></div>`:''}
+
+      <div class="vat3-row"><span class="vat3-key" title="VAT on purchases (input tax). All eligible VAT including reverse charge and postponed accounting amounts.">T2</span><span>VAT on purchases (input) <span style="font-size:10px;color:var(--text3);cursor:help" title="T2 = All eligible purchase VAT (Irish + RC + PA)">ℹ</span></span><strong>${eur(r.T2||r.inVAT||0)}</strong></div>
+
+      <div class="vat3-row" style="${r.net<=0?'opacity:.45':''}" title="${r.net<=0?'Zero — no payment due':'VAT payable to Revenue'}"><span class="vat3-key">T3</span><span>VAT payable (T1 − T2) <span style="font-size:10px;color:var(--text3);cursor:help" title="Amount you owe to Revenue. Only applies when T1 > T2.">ℹ</span></span><strong style="color:${!ref&&r.net>0?'var(--danger)':'var(--text2)'}">${r.net>=0&&r.net>0?eur(r.net):'—'}</strong></div>
+
+      <div class="vat3-row" style="${r.net>=0?'opacity:.45':''}" title="${r.net>=0?'Zero — no refund due':'VAT refund from Revenue'}"><span class="vat3-key">T4</span><span>VAT repayable (T2 − T1) <span style="font-size:10px;color:var(--text3);cursor:help" title="Amount Revenue owes you. Only applies when T2 > T1.">ℹ</span></span><strong style="color:${ref?'var(--accent)':'var(--text2)'}">${r.net<0?eur(Math.abs(r.net)):'—'}</strong></div>
+
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:10px 0 4px;border-bottom:1px solid var(--border);margin-top:4px;margin-bottom:4px">── EU INTRA-COMMUNITY ──</div>
+
+      <div class="vat3-row" style="${(r.E1||0)===0?'opacity:.45':''}"><span class="vat3-key" title="Intra-EU supplies of goods — net amounts">E1</span><span>Intra-EU supplies — goods (net) <span style="font-size:10px;color:var(--text3);cursor:help" title="Net value of goods you supplied to EU business customers (zero-rated). Report in VIES.">ℹ</span></span><strong>${eur(r.E1||0)}</strong></div>
+      <div class="vat3-row" style="${(r.E2||0)===0?'opacity:.45':''}"><span class="vat3-key" title="Intra-EU acquisitions of goods — net amounts">E2</span><span>Intra-EU acquisitions — goods (net) <span style="font-size:10px;color:var(--text3);cursor:help" title="Net value of goods you acquired from EU suppliers. Report in VIES.">ℹ</span></span><strong>${eur(r.E2||0)}</strong></div>
+      <div class="vat3-row" style="${(r.ES1||0)===0?'opacity:.45':''}"><span class="vat3-key" title="Intra-EU services supplied — net amounts">ES1</span><span>Intra-EU services supplied (net) <span style="font-size:10px;color:var(--text3);cursor:help" title="Net value of services you supplied to EU business customers. Subject to reverse charge at destination.">ℹ</span></span><strong>${eur(r.ES1||0)}</strong></div>
+      <div class="vat3-row" style="${(r.ES2||0)===0?'opacity:.45':''}"><span class="vat3-key" title="Intra-EU services received — net amounts">ES2</span><span>Intra-EU services received (net) <span style="font-size:10px;color:var(--text3);cursor:help" title="Net value of services received from EU suppliers. You self-assess the VAT via reverse charge.">ℹ</span></span><strong>${eur(r.ES2||0)}</strong></div>
+
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:10px 0 4px;border-bottom:1px solid var(--border);margin-top:4px;margin-bottom:4px">── POSTPONED ACCOUNTING ──</div>
+
+      <div class="vat3-row" style="${(r.PA1||0)===0?'opacity:.45':''}"><span class="vat3-key" title="Postponed accounting VAT on UK/third country imports">PA1</span><span>Postponed accounting — UK/3rd (VAT) <span style="font-size:10px;color:var(--text3);cursor:help" title="VAT self-assessed on UK/third country imports. Cash neutral — same amount in T1 and T2.">ℹ</span></span><strong>${eur(r.PA1||0)}</strong></div>
+
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:10px 0 4px;border-bottom:1px solid var(--border);margin-top:4px;margin-bottom:4px">── TOTALS ──</div>
+
+      <div class="vat3-row"><span class="vat3-key"></span><span style="color:var(--text2)">Total sales excl. VAT</span><strong>${eur(r.totalSalesNet||sNet)}</strong></div>
+      <div class="vat3-row"><span class="vat3-key"></span><span style="color:var(--text2)">Total purchases excl. VAT</span><strong>${eur(r.totalPurNet||cNet)}</strong></div>
+
+      ${breakdownHTML(purchBD,salesBD)}
+    </div>
+
+    ${(r.PA1||0)>0?`<div class="alert alert-warn">
+      <span class="alert-icon">ℹ</span>
+      <div><strong>Postponed Accounting</strong> — Irish VAT has been self-assessed on UK/third country imports. The same amount (${eur(r.PA1)}) has been added to both T1 and T2 — cash neutral. Ensure your company is registered for Postponed Accounting with Revenue.</div>
+    </div>`:''}
+    ${(r.rcVAT||0)>0?`<div class="alert alert-info">
+      <span class="alert-icon">ℹ</span>
+      <div><strong>Reverse Charge</strong> — VAT has been self-assessed on EU supplier invoices. Added to both T1 and T2 — cash neutral. (VAT Consolidation Act 2010, Section 16)</div>
+    </div>`:''}
+    ${((r.ES1||0)>0||(r.E1||0)>0)?`<div class="alert alert-warn">
+      <span class="alert-icon">⚠</span>
+      <div><strong>VIES Declaration required</strong> — you have intra-EU supplies this period. File your VIES return separately with Revenue.</div>
+    </div>`:''}
+    ${r._paWarning?`<div class="alert alert-warn">
+      <span class="alert-icon">⚠</span>
+      <div><strong>Postponed Accounting not registered</strong> — this client has UK/third country import invoices but is not marked as registered for Postponed Accounting. Verify before filing.</div>
+    </div>`:''}
+
+    ${isCash&&deferredCount>0?`<div class="alert alert-warn">
+      <span class="alert-icon">&#9203;</span>
+      <div><strong>${deferredCount} invoice${deferredCount>1?'s':''} deferred \u2014 ${eur(deferredVAT)} VAT not yet due.</strong> Include these in the VAT return for the period in which payment is received.</div>
+    </div>`:''}
+
+    ${paidSal.length?`
+    <div class="section-label">${isCash?'Included in this return \u2014 Sales (paid)':'Sales invoices'} (${paidSal.length})</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:42px">#</th><th>File</th><th>Customer</th><th>Description</th><th>Net</th><th>VAT</th><th>Rate</th><th>Country</th><th>Field</th></tr></thead>
+      <tbody>${paidSal.map((x,si)=>`<tr>
+        <td style="font-size:11px;font-weight:600;color:var(--text3);font-family:monospace">S${String(si+1).padStart(2,'0')}</td>
+        <td style="font-size:11px;color:var(--text2)">${x.filename||''}</td>
+        <td>${x.customer||'\u2014'}</td>
+        <td style="font-size:12px;color:var(--text2)">${x.description||'\u2014'}</td>
+        <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+        <td style="font-family:monospace;font-size:12px">${eur(x.vatAmount)}</td>
+        <td><span class="badge badge-gray">${x.vatRate||'\u2014'}</span></td>
+        <td>${countryBadge(x.customerLocation,x.customerCountry)}</td>
+        <td>${vatFieldBadge(x.vatField)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:''}
+
+    ${paidPur.length?`
+    <div class="section-label">${isCash?'Included in this return \u2014 Purchases (paid)':'Accepted purchase invoices'} (${paidPur.length})</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:42px">#</th><th>File</th><th>Supplier</th><th>Description</th><th>Net</th><th>VAT</th><th>Rate</th><th>Country</th><th>Field</th><th>Category</th><th></th></tr></thead>
+      <tbody>${paidPur.map(x=>{const i=(r.purchases||[]).indexOf(x);return`<tr>
+        <td style="font-size:11px;font-weight:600;color:var(--text3);font-family:monospace">P${String(i+1).padStart(2,'0')}</td>
+        <td style="font-size:11px;color:var(--text2)">${x.filename||''}</td>
+        <td>${x.supplier||'\u2014'}${(x.reverseCharge||x.isReverseCharge)?'<span class="badge badge-blue" style="margin-left:5px;font-size:10px">RC</span>':(x.postponedAccounting?'<span class="badge badge-amber" style="margin-left:5px;font-size:10px">PA</span>':'')}</td>
+        <td style="font-size:12px;color:var(--text2)">${x.description||x.filterReason||'\u2014'}</td>
+        <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+        <td style="font-family:monospace;font-size:12px">${eur(x.vatAmount)}</td>
+        <td>${rcRateBadge(x,i)}</td>
+        <td>${countryBadge(x.supplierLocation,x.supplierCountry)}</td>
+        <td>${vatFieldBadge(x.vatField||(x.reverseCharge?'RC':x.postponedAccounting?'PA1':'T2'))}</td>
+        <td style="font-size:11px;color:var(--text2)">${x.category||'\u2014'}</td>
+        <td><button class="override-btn to-excl" onclick="toggleOverride(${i})" title="Mark as private / exclude">Exclude</button></td>
+      </tr>`;}).join('')}</tbody>
+    </table></div>`:''}
+
+    ${deferredSal.length||deferredPur.length?`
+    <div class="section-label" style="color:var(--warn)">\u23f3 Deferred \u2014 not yet paid (${deferredSal.length+deferredPur.length})</div>
+    <div class="table-wrap" style="border-color:#e8d48a"><table>
+      <thead style="background:var(--warn-light)"><tr><th style="width:42px">#</th><th style="width:70px">Type</th><th>Supplier / Customer</th><th>Description</th><th>Net</th><th>VAT deferred</th><th>Rate</th></tr></thead>
+      <tbody>
+        ${deferredSal.map((x,si)=>`<tr>
+          <td style="font-size:11px;font-weight:600;color:var(--text3);font-family:monospace">S${String(si+1).padStart(2,'0')}</td>
+          <td><span class="badge badge-blue" style="font-size:10px">Sale</span></td>
+          <td>${x.customer||'\u2014'}</td>
+          <td style="font-size:12px;color:var(--text2)">${x.description||'\u2014'}</td>
+          <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+          <td style="font-family:monospace;font-size:12px;color:var(--warn)">${eur(x.vatAmount)}</td>
+          <td><span class="badge badge-gray">${x.vatRate||'\u2014'}</span></td>
+        </tr>`).join('')}
+        ${deferredPur.map(x=>{const i=(r.purchases||[]).indexOf(x);return`<tr>
+          <td style="font-size:11px;font-weight:600;color:var(--text3);font-family:monospace">P${String(i+1).padStart(2,'0')}</td>
+          <td><span class="badge badge-amber" style="font-size:10px">Purchase</span></td>
+          <td>${x.supplier||'\u2014'}</td>
+          <td style="font-size:12px;color:var(--text2)">${x.description||'\u2014'}</td>
+          <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+          <td style="font-family:monospace;font-size:12px;color:var(--warn)">${eur(x.vatAmount)}</td>
+          <td><span class="badge badge-gray">${x.vatRate||'\u2014'}</span></td>
+        </tr>`;}).join('')}
+      </tbody>
+    </table></div>
+    <p style="font-size:12px;color:var(--warn);margin-bottom:1rem;padding:0 2px">&#8505; Add to the VAT return for the period in which payment is received.</p>`:''}
+
+    ${excl.length?`
+    <div class="section-label">Excluded \u2014 private / not deductible (${excl.length})</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:42px">#</th><th>File</th><th>Supplier</th><th>Description</th><th>Net</th><th>Reason for exclusion</th><th></th></tr></thead>
+      <tbody>${excl.map(x=>{
+        const i=(r.purchases||[]).indexOf(x);
+        const raw=x.filterReason||'Private expense';
+        const colonIdx=raw.indexOf(':');
+        const cat=colonIdx>-1?raw.slice(0,colonIdx).trim():null;
+        const detail=colonIdx>-1?raw.slice(colonIdx+1).trim():raw;
+        return`<tr>
+        <td style="font-size:11px;font-weight:600;color:var(--text3);font-family:monospace">P${String(i+1).padStart(2,'0')}</td>
+        <td style="font-size:11px;color:var(--text2)">${x.filename||''}</td>
+        <td>${x.supplier||'\u2014'}</td>
+        <td style="font-size:12px;color:var(--text2)">${x.description||'\u2014'}</td>
+        <td style="font-family:monospace;font-size:12px">${eur(x.netAmount)}</td>
+        <td style="font-size:12px">${cat?`<span class="badge badge-red" style="margin-bottom:3px;display:inline-flex">${cat}</span><br><span style="color:var(--text2)">${detail}</span>`:`<span style="color:var(--danger)">${raw}</span>`}</td>
+        <td><button class="override-btn to-incl" onclick="toggleOverride(${i})" title="Mark as business expense / include">Include</button></td>
+      </tr>`;}).join('')}</tbody>
+    </table></div>`:''}
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-top:.5rem">
+      <div style="font-size:12px;font-weight:600;margin-bottom:.5rem;color:var(--text)">Notes</div>
+      <textarea class="form-textarea" id="returnNotes" placeholder="Add a note about this return\u2026" style="min-height:60px;font-size:13px">${r.notes||''}</textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="saveNote()">Save note</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openSummary(window._detailResult)">\uD83D\uDCE7 Email summary</button>
+          <button class="btn btn-ghost btn-sm" onclick="doExport(window._detailResult)">Export Excel</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ─── EXPORT (HTML → .xls with formatting) ─── */
+function doExport(r){
+  if(!r){toast('No result to export.');return;}
+  const client=S.clients.find(c=>(c.returns||[]).includes(r));
+  const eligible=(r.purchases||[]).filter(x=>x.businessRelevant!==false);
+  const excl=(r.purchases||[]).filter(x=>x.businessRelevant===false);
+  const ref=r.net<0;
+  const sNet=r2((r.sales||[]).reduce((s,x)=>s+pf(x.netAmount),0));
+  const cNet=r2(eligible.reduce((s,x)=>s+pf(x.netAmount),0));
+  const fm=v=>pf(v).toFixed(2);
+  const pnum=x=>'P'+String((r.purchases||[]).indexOf(x)+1).padStart(2,'0');
+  const snum=(x,i)=>'S'+String(i+1).padStart(2,'0');
+  const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const C=12;
+
+  const cell=(v,s='')=>`<td style="padding:5px 8px;border:1px solid #e0e0e0;${s}">${esc(String(v==null?'':v))}</td>`;
+  const cellN=(v,s='')=>`<td style="padding:5px 8px;border:1px solid #e0e0e0;text-align:right;font-family:Consolas,monospace;${s}">${fm(v)}</td>`;
+  const cellH=(v,s='')=>`<td style="padding:6px 8px;border:1px solid #ccc;font-weight:bold;${s}">${esc(String(v==null?'':v))}</td>`;
+  const gap=()=>`<tr><td colspan="${C}" style="padding:5px;border:none;background:#f7f7f5"></td></tr>`;
+  const secBar=(lbl,bg,fg='#fff')=>`<tr><td colspan="${C}" style="padding:9px 10px;font-weight:bold;font-size:11pt;background:${bg};color:${fg};border:none;letter-spacing:.02em">${esc(lbl)}</td></tr>`;
+  const colRow=(labels,bg,fg='#333')=>`<tr>${labels.map(l=>cellH(l,`background:${bg};color:${fg};font-size:9pt;text-transform:uppercase;letter-spacing:.04em`)).join('')}</tr>`;
+  const dataRow=(cells,alt)=>`<tr style="background:${alt?'#fafaf8':'#ffffff'}">${cells.join('')}</tr>`;
+
+  let h=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>VAT Return</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+</head><body>
+<table style="font-family:Arial,sans-serif;font-size:10pt;border-collapse:collapse;width:100%">`;
+
+  // ── TITLE ──
+  h+=`<tr><td colspan="${C}" style="padding:12px;background:#1a6b3c;color:#fff;font-size:14pt;font-weight:bold;border:none">VATwise Ireland \u2014 VAT Return</td></tr>`;
+  h+=`<tr><td colspan="${C}" style="padding:5px 12px;background:#155a31;color:#a8ddc0;font-size:9pt;border:none">${client?esc(client.name)+' \u00b7 '+(client.vat?esc(client.vat)+' \u00b7 ':''): ''}${esc(r.period+' '+r.year)} \u00b7 Submitted ${esc(r.date)} \u00b7 Exported ${new Date().toLocaleDateString('en-IE')}</td></tr>`;
+  h+=gap();
+
+  // ── VAT3 SUMMARY ──
+  h+=secBar('VAT3 SUMMARY','#1a6b3c');
+  h+=colRow(['Code','Description','Amount (\u20AC)'],'#d4eddf','#1a3d28');
+  const vat3rows=[
+    ['T1','VAT on Sales \u2014 Output VAT',r.outVAT,''],
+    ['T2','VAT on Purchases \u2014 Input VAT',r.inVAT,''],
+    ['T3','VAT Payable to Revenue (T1 \u2212 T2)',r.net>=0?r.net:0,r.net>0?'font-weight:bold;color:#c0392b':'color:#aaa'],
+    ['T4','VAT Repayable from Revenue (T2 \u2212 T1)',r.net<0?Math.abs(r.net):0,r.net<0?'font-weight:bold;color:#1a6b3c':'color:#aaa'],
+    ['E1','Total Sales excl. VAT',sNet,''],
+    ['E2','Total Purchases excl. VAT',cNet,''],
+  ];
+  vat3rows.forEach(([code,desc,val,st],i)=>{
+    h+=`<tr style="background:${i%2?'#f2faf5':'#fff'}">
+      ${cell(code,'font-weight:bold;font-family:Consolas,monospace;color:#1a6b3c;width:52px')}
+      ${cell(desc)}
+      ${cellN(val,'font-weight:600;'+st)}
+    </tr>`;
+  });
+  const rBg=ref?'#d4eddf':'#f9dedd'; const rFg=ref?'#1a6b3c':'#c0392b';
+  h+=`<tr style="background:${rBg}">${cell('\u2192 Result','font-weight:bold;color:'+rFg)}${cell(ref?'REFUND \u2014 Revenue owes you':'PAYMENT \u2014 You owe Revenue','font-weight:bold;color:'+rFg)}${cellN(Math.abs(r.net),'font-size:12pt;font-weight:bold;color:'+rFg)}</tr>`;
+  h+=gap();
+
+  // ── SALES INVOICES ──
+  h+=secBar(`SALES INVOICES (${(r.sales||[]).length})`,'#1a5ca8');
+  h+=colRow(['#','File','Invoice No.','Customer','Date','Description','Net (\u20AC)','VAT (\u20AC)','Gross (\u20AC)','Rate','Category',''],'#dce8f7','#1a3060');
+  if((r.sales||[]).length){
+    (r.sales||[]).forEach((x,i)=>{
+      h+=dataRow([
+        cell(snum(x,i),'font-weight:bold;font-family:Consolas,monospace;color:#888;width:44px'),
+        cell(x.filename,'font-size:9pt;color:#888'),
+        cell(x.invoiceNo,'font-size:9pt'),
+        cell(x.customer,'font-weight:500'),
+        cell(x.date,'font-size:9pt;color:#666'),
+        cell(x.description,'color:#444'),
+        cellN(x.netAmount,'font-weight:600'),
+        cellN(x.vatAmount),
+        cellN(x.grossAmount),
+        cell(x.vatRate,'color:#b07800;font-size:9pt'),
+        cell(x.category,'color:#888;font-size:9pt'),
+        cell('','border:none'),
+      ],i%2===1);
+    });
+    const sTN=r2((r.sales||[]).reduce((s,x)=>s+pf(x.netAmount),0));
+    const sTV=r2((r.sales||[]).reduce((s,x)=>s+pf(x.vatAmount),0));
+    const sTG=r2((r.sales||[]).reduce((s,x)=>s+pf(x.grossAmount),0));
+    h+=`<tr style="background:#dce8f7"><td colspan="6" style="padding:6px 8px;border:1px solid #ccc;font-weight:bold">TOTAL</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold">${fm(sTN)}</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold">${fm(sTV)}</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold">${fm(sTG)}</td><td colspan="3" style="border:1px solid #ccc"></td></tr>`;
+  } else {
+    h+=`<tr><td colspan="${C}" style="padding:8px;color:#888;font-style:italic;border:1px solid #e0e0e0">No sales invoices recorded</td></tr>`;
+  }
+  h+=gap();
+
+  // ── ACCEPTED PURCHASES ──
+  h+=secBar(`ACCEPTED PURCHASE INVOICES (${eligible.length})`,'#b07800');
+  h+=colRow(['#','File','Invoice No.','Supplier','Date','Description','Net (\u20AC)','VAT (\u20AC)','Gross (\u20AC)','Rate','Category','Rev. Charge'],'#fdf0cc','#6b4700');
+  if(eligible.length){
+    eligible.forEach((x,i)=>{
+      h+=dataRow([
+        cell(pnum(x),'font-weight:bold;font-family:Consolas,monospace;color:#888;width:44px'),
+        cell(x.filename,'font-size:9pt;color:#888'),
+        cell(x.invoiceNo,'font-size:9pt'),
+        cell(x.supplier,'font-weight:500'),
+        cell(x.date,'font-size:9pt;color:#666'),
+        cell(x.description,'color:#444'),
+        cellN(x.netAmount,'font-weight:600'),
+        cellN(x.vatAmount,(x.reverseCharge||x.isReverseCharge)?'color:#1a5ca8':''),
+        cellN(x.grossAmount),
+        cell(x.vatRate,'color:#b07800;font-size:9pt'),
+        cell(x.category,'color:#888;font-size:9pt'),
+        cell((x.reverseCharge||x.isReverseCharge)?'Yes':'No',(x.reverseCharge||x.isReverseCharge)?'color:#1a5ca8;font-weight:600':'color:#aaa'),
+      ],i%2===1);
+    });
+    const pTN=r2(eligible.reduce((s,x)=>s+pf(x.netAmount),0));
+    const pTV=r2(eligible.reduce((s,x)=>s+pf(x.vatAmount),0));
+    const pTG=r2(eligible.reduce((s,x)=>s+pf(x.grossAmount),0));
+    h+=`<tr style="background:#fdf0cc"><td colspan="6" style="padding:6px 8px;border:1px solid #ccc;font-weight:bold">TOTAL</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold">${fm(pTN)}</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold">${fm(pTV)}</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold">${fm(pTG)}</td><td colspan="3" style="border:1px solid #ccc"></td></tr>`;
+  } else {
+    h+=`<tr><td colspan="${C}" style="padding:8px;color:#888;font-style:italic;border:1px solid #e0e0e0">No accepted purchase invoices</td></tr>`;
+  }
+  h+=gap();
+
+  // ── EXCLUDED ──
+  h+=secBar(`EXCLUDED INVOICES \u2014 Private / Not Deductible (${excl.length})`,'#c0392b');
+  h+=colRow(['#','File','Invoice No.','Supplier','Date','Description','Net (\u20AC)','Reason for Exclusion','','','',''],'#fce8e6','#7a1a12');
+  if(excl.length){
+    excl.forEach((x,i)=>{
+      h+=dataRow([
+        cell(pnum(x),'font-weight:bold;font-family:Consolas,monospace;color:#888;width:44px'),
+        cell(x.filename,'font-size:9pt;color:#888'),
+        cell(x.invoiceNo,'font-size:9pt'),
+        cell(x.supplier,'font-weight:500'),
+        cell(x.date,'font-size:9pt;color:#666'),
+        cell(x.description,'color:#444'),
+        cellN(x.netAmount,'color:#c0392b;font-weight:600'),
+        cell(x.filterReason||'Private expense','color:#c0392b'),
+        cell('','border:none'),cell('','border:none'),cell('','border:none'),cell('','border:none'),
+      ],i%2===1);
+    });
+    const exTN=r2(excl.reduce((s,x)=>s+pf(x.netAmount),0));
+    h+=`<tr style="background:#fce8e6"><td colspan="6" style="padding:6px 8px;border:1px solid #ccc;font-weight:bold">TOTAL EXCLUDED</td><td style="padding:6px 8px;border:1px solid #ccc;text-align:right;font-family:Consolas,monospace;font-weight:bold;color:#c0392b">${fm(exTN)}</td><td colspan="5" style="border:1px solid #ccc"></td></tr>`;
+  } else {
+    h+=`<tr><td colspan="${C}" style="padding:8px;color:#888;font-style:italic;border:1px solid #e0e0e0">No excluded invoices</td></tr>`;
+  }
+
+  if(r.notes){
+    h+=gap();
+    h+=secBar('NOTES','#65635c');
+    h+=`<tr><td colspan="${C}" style="padding:8px;border:1px solid #e0e0e0;color:#333">${esc(r.notes)}</td></tr>`;
+  }
+  h+=gap();
+  h+=`<tr><td colspan="${C}" style="padding:4px 8px;border:none;color:#bbb;font-size:8pt">Generated by VATwise Ireland</td></tr>`;
+  h+=`</table></body></html>`;
+
+  const blob=new Blob([h],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download=`VATwise_${r.period}_${r.year}.xls`.replace(/[\s\u2013]/g,'_');
+  a.click();URL.revokeObjectURL(url);
+  toast('Excel exported.');
+}
+
+/* ─── COUNTRY BADGE ─── */
+function countryBadge(loc,code){
+  const cc=((code||loc||'').toUpperCase().slice(0,2))||'??';
+  if(loc==='ireland')return`<span class="badge-country-ie">IE</span>`;
+  if(loc==='eu')return`<span class="badge-country-eu">${cc}</span>`;
+  if(loc==='uk')return`<span class="badge-country-gb">GB</span>`;
+  if(loc)return`<span class="badge-country-other">${cc}</span>`;
+  return'';
+}
+
+/* ─── VAT FIELD BADGE ─── */
+function vatFieldBadge(field){
+  if(!field)return'';
+  const f=(field||'').toUpperCase();
+  if(f==='T1'||f==='T2')return`<span class="badge-field-t">${field}</span>`;
+  if(f==='E1'||f==='E2'||f==='ES1'||f==='ES2')return`<span class="badge-field-eu">${field}</span>`;
+  if(f==='RC')return`<span class="badge-field-rc">RC</span>`;
+  if(f==='PA1')return`<span class="badge-field-pa">PA1</span>`;
+  if(f==='EXPORT'||f==='0%')return`<span class="badge-field-exp">0%</span>`;
+  return`<span class="badge badge-gray" style="font-size:10px">${field}</span>`;
+}
+
+/* ─── RC CONFIDENCE BADGE ─── */
+function rcRateBadge(x,i){
+  if(!x.reverseCharge&&!x.isReverseCharge)return`<span class="badge badge-amber">${x.vatRate||'\u2014'}</span>`;
+  const conf=x.rcConfidence||(x.isReverseCharge?'high':'none');
+  if(conf==='high'||conf==='confirmed')return`<span class="badge badge-green">${x.vatRate||'\u2014'}</span>`;
+  if(conf==='medium')return`<span class="badge badge-amber" title="Please verify \u2014 RC detected from invoice context">${x.vatRate||'\u2014'} \u26a0</span>`;
+  if(conf==='low')return`<span class="badge badge-amber">${x.vatRate||'\u2014'}</span><div style="margin-top:4px;font-size:11px;color:var(--warn)">AI suggests RC. <button class="override-btn to-incl" onclick="confirmRC(${i})" style="margin-left:3px">Confirm RC</button><button class="override-btn to-excl" onclick="dismissRC(${i})" style="margin-left:3px">Not RC</button></div>`;
+  return`<span class="badge badge-amber">${x.vatRate||'\u2014'}</span>`;
+}
+function confirmRC(idx){
+  const r=window._detailResult;if(!r||!r.purchases[idx])return;
+  r.purchases[idx].rcConfidence='confirmed';
+  save();
+  const rp=document.getElementById('resultPanel');if(rp&&rp.querySelector('.result-banner'))rp.innerHTML=buildResultHTML(r);
+  const mb=document.getElementById('mDBody');if(mb&&mb.innerHTML)mb.innerHTML=buildResultHTML(r);
+}
+function dismissRC(idx){
+  const r=window._detailResult;if(!r||!r.purchases[idx])return;
+  r.purchases[idx].reverseCharge=false;r.purchases[idx].isReverseCharge=false;r.purchases[idx].rcConfidence='none';
+  r.purchases[idx].vatAmount=0;r.purchases[idx].vatRate='0%';r.purchases[idx].grossAmount=r.purchases[idx].netAmount;
+  const isCash=r.vatBasis==='cash';
+  const eligible=isCash?r.purchases.filter(x=>x.businessRelevant!==false&&(x.paidInPeriod!==false||x.reverseCharge===true||x.postponedAccounting===true)):r.purchases.filter(x=>x.businessRelevant!==false);
+  const paidSal=isCash?(r.sales||[]).filter(x=>x.paidInPeriod!==false):(r.sales||[]);
+  const sum=(arr,field)=>arr.reduce((s,x)=>s+pf(x[field]||0),0);
+  const rcItems=eligible.filter(x=>x.reverseCharge===true||x.isReverseCharge===true);
+  const paItems=eligible.filter(x=>x.postponedAccounting===true);
+  const normalSales=paidSal.filter(x=>x.customerLocation==='ireland');
+  const newSalesVAT=r2(sum(normalSales,'vatAmount'));
+  const newRcVAT=r2(sum(rcItems,'vatAmount'));
+  const newPaVAT=r2(sum(paItems,'vatAmount'));
+  const newT1=r2(newSalesVAT+newRcVAT+newPaVAT);
+  const newT2=r2(sum(eligible,'vatAmount'));
+  r.T1=newT1;r.T2=newT2;r.outVAT=newT1;r.inVAT=newT2;r.net=r2(newT1-newT2);
+  r.salesVAT=newSalesVAT;r.rcVAT=newRcVAT;r.paVAT=newPaVAT;
+  r.rcCount=rcItems.length;r.paCount=paItems.length;
+  save();
+  const rp=document.getElementById('resultPanel');if(rp&&rp.querySelector('.result-banner'))rp.innerHTML=buildResultHTML(r);
+  const mb=document.getElementById('mDBody');if(mb&&mb.innerHTML)mb.innerHTML=buildResultHTML(r);
+  toast('Reverse charge removed and T1/T2 recalculated.');
+}
+
+/* ─── UTILS ─── */
+function eur(n){const v=parseFloat(n||0);return'\u20AC'+v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function pf(n){return parseFloat(n||0);}
+function r2(n){return Math.round(pf(n)*100)/100;}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(m=>m.classList.remove('open'));});
+let _tt;
+function toast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3500);}
+</script>
+</body>
+</html>
